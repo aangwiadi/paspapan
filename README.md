@@ -61,22 +61,70 @@
 ## 📸 Application Previews
 
 <details>
-<summary><b>Click to View Admin Dashboard</b></summary>
+<summary><b>💻 Admin Dashboard (Web)</b></summary>
 <br>
 
-| Live Monitoring | Analytics |
+| Dashboard & Monitoring | Attendance Data |
 | :---: | :---: |
-| <img src="./screenshots/admin/01.png" width="100%"> | <img src="./screenshots/admin/02.png" width="100%"> |
+| ![Dashboard](./screenshots/admin/01_Dashboard.png) | ![Attendance](./screenshots/admin/02_DataAbsensi.png) |
+
+| Leave Approval | Overtime Management |
+| :---: | :---: |
+| ![Leave](./screenshots/admin/03_PersetujuanCuti.png) | ![Overtime](./screenshots/admin/04_ManagementLembur.png) |
+
+| Shift Scheduling | Analytics Dashboard |
+| :---: | :---: |
+| ![Shift](./screenshots/admin/05_ManagemetShift.png) | ![Analytics](./screenshots/admin/06_DashboardAnalitik.png) |
+
+| Calendar & Holidays | Announcements |
+| :---: | :---: |
+| ![Calendar](./screenshots/admin/07_LiburKalender.png) | ![Announcements](./screenshots/admin/08_Announcements.png) |
+
+| Payroll Management | Reimbursements |
+| :---: | :---: |
+| ![Payroll](./screenshots/admin/09_Payroll.png) | ![Reimbursements](./screenshots/admin/10_Reimbursement.png) |
+
+| Allowances & Deductions | Barcode Management |
+| :---: | :---: |
+| ![Allowances](./screenshots/admin/11_Allowances.png) | ![Barcode](./screenshots/admin/12_Barcode.png) |
+
+| App Settings | Maintenance Mode |
+| :---: | :---: |
+| ![Settings](./screenshots/admin/13_AppSettings.png) | ![Maintenance](./screenshots/admin/14_Maintance.png) |
+
+| User Import/Export | Attendance Export |
+| :---: | :---: |
+| ![Export Users](./screenshots/admin/15_ExportImportEmployee.png) | ![Export Attendance](./screenshots/admin/16_ExportImportAttendance.png) |
 
 </details>
 
 <details>
-<summary><b>Click to View Mobile App</b></summary>
+<summary><b>📱 Mobile App (Android/PWA)</b></summary>
 <br>
 
-| Home Screen | Attendance Scan |
-| :---: | :---: |
-| <img src="./screenshots/users/01.png" width="200px"> | <img src="./screenshots/users/02.png" width="200px"> |
+| Login Screen | Home (Face Registered) | Home (New User) |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/01_Login.png" width="250"> | <img src="./screenshots/users/02_HomeFace.png" width="250"> | <img src="./screenshots/users/03_Home.png" width="250"> |
+
+| Attendance History | Leave Request | Overtime Request |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/04_History.png" width="250"> | <img src="./screenshots/users/05_LeaveRequest.png" width="250"> | <img src="./screenshots/users/06_Overtime.png" width="250"> |
+
+| Reimbursement | Payslip | Profile |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/07_Reimbursement.png" width="250"> | <img src="./screenshots/users/08_Payslip.png" width="250"> | <img src="./screenshots/users/09_Profile.png" width="250"> |
+
+| Schedule | Face Registration | Scan QR |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/10_Schedule.png" width="250"> | <img src="./screenshots/users/11_FaceID.png" width="250"> | <img src="./screenshots/users/12_ScanQR.png" width="250"> |
+
+| Scan Error | Selfie Evidence | Check-Out Success |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/13_ScanRQError.png" width="250"> | <img src="./screenshots/users/14_Selfi.png" width="250"> | <img src="./screenshots/users/15_CheckOut.png" width="250"> |
+
+| After Check-Out | | |
+| :---: | :---: | :---: |
+| <img src="./screenshots/users/16_HomeAfterCheckOut.png" width="250"> | | |
 
 </details>
 
