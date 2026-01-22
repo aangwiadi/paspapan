@@ -15,29 +15,8 @@ class ActivityLog extends Model
 
     public static function record($action, $description = null)
     {
-        $userId = auth()->id();
-        $ip = request()->ip();
-
-        // Check for recent similar log (e.g., within last 1 hour)
-        $recentLog = self::where('user_id', $userId)
-            ->where('action', $action)
-            ->where('description', $description)
-            ->where('created_at', '>=', now()->subHour())
-            ->latest()
-            ->first();
-
-        if ($recentLog) {
-            $recentLog->increment('count');
-            $recentLog->touch(); // Update updated_at
-            return $recentLog;
-        }
-
-        return self::create([
-            'user_id' => $userId,
-            'action' => $action,
-            'description' => $description,
-            'ip_address' => $ip,
-            'count' => 1,
-        ]);
+        // Open Core: Delegate to Service (Community = No-op, Enterprise = Logged)
+        $service = app(\App\Contracts\AuditServiceInterface::class);
+        return $service->record($action, $description);
     }
 }

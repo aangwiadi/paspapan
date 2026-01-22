@@ -2,6 +2,12 @@
     use Illuminate\Support\Carbon;
     $isPerDayFilter = $startDate === $endDate;
     $showUserDetail = true; 
+    
+    // Export Logic
+    $isLocked = \App\Helpers\Editions::reportingLocked();
+    $exportUrl = route('admin.attendances.report', ['startDate' => $startDate, 'endDate' => $endDate, 'division' => $division, 'jobTitle' => $jobTitle]);
+    $excelUrl = route('admin.attendances.report', ['startDate' => $startDate, 'endDate' => $endDate, 'division' => $division, 'jobTitle' => $jobTitle, 'format' => 'excel']);
+    $lockAction = "\$dispatch('feature-lock', { title: 'Export Locked', message: 'Attendance Report is an Enterprise Feature 🔒. Please Upgrade.' })";
 @endphp
 <div>
     <div class="mx-auto max-w-7xl px-2 sm:px-0 lg:px-0">
@@ -20,12 +26,59 @@
                     {{ __('Monitor employee attendance, shifts, and status.') }}
                 </p>
             </div>
-             <x-secondary-button
-                href="{{ route('admin.attendances.report', ['startDate' => $startDate, 'endDate' => $endDate, 'division' => $division, 'jobTitle' => $jobTitle]) }}"
-                class="flex justify-center w-full sm:w-auto gap-2">
-                <x-heroicon-o-printer class="h-5 w-5" />
-                {{ __('Export Report') }}
-            </x-secondary-button>
+            @if($isLocked)
+                <button
+                    type="button"
+                    x-on:click.prevent="{{ $lockAction }}"
+                    class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-lg font-semibold text-sm text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150 flex justify-center w-full sm:w-auto gap-2">
+                    <x-heroicon-o-printer class="h-5 w-5" />
+                    {{ __('Export Report') }}
+                    🔒
+                </button>
+            @else
+                <div x-data="{
+                    start: @entangle('startDate'),
+                    end: @entangle('endDate'),
+                    get showWarning() {
+                        if (!this.start || !this.end) return false;
+                        const start = new Date(this.start);
+                        const end = new Date(this.end);
+                        const diffTime = Math.abs(end - start);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        return diffDays > 31;
+                    }
+                }" class="flex items-center gap-3">
+                    <div x-show="showWarning" x-transition class="flex items-center gap-2 text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-medium dark:bg-amber-900/20 dark:border-amber-700/50 dark:text-amber-400">
+                        <x-heroicon-m-exclamation-triangle class="h-4 w-4" />
+                        {{ __('Range > 1 Month: Excel Recommended') }}
+                    </div>
+
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button type="button" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-lg font-semibold text-sm text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150 flex justify-center w-full sm:w-auto gap-2">
+                                <x-heroicon-o-printer class="h-5 w-5" />
+                                {{ __('Export Report') }}
+                                <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <x-dropdown-link href="{{ $exportUrl }}" target="_blank">
+                                <div class="flex items-center gap-2">
+                                    <x-heroicon-o-document-text class="h-4 w-4" /> {{ __('Export as PDF') }}
+                                </div>
+                            </x-dropdown-link>
+                            <x-dropdown-link href="{{ $excelUrl }}" target="_blank">
+                                 <div class="flex items-center gap-2">
+                                    <x-heroicon-o-table-cells class="h-4 w-4" /> {{ __('Export as Excel') }}
+                                </div>
+                            </x-dropdown-link>
+                        </x-slot>
+                    </x-dropdown>
+                </div>
+            @endif
         </div>
 
         <!-- Filters -->
@@ -230,7 +283,7 @@
                                         'present' => 'bg-green-100 text-green-800', 'late' => 'bg-amber-100 text-amber-800', 'absent' => 'bg-red-100 text-red-800', default => 'bg-gray-100 text-gray-800'
                                     };
                                 @endphp
-                                <span class="px-2 py-1 rounded text-xs font-bold uppercase {{ $color }}">{{ $status }}</span>
+                                <span class="px-2 py-1 rounded text-xs font-bold uppercase {{ $color }}">{{ __($status) }}</span>
                              @endif
                         </div>
 
@@ -247,32 +300,32 @@
                              <div class="grid grid-cols-3 gap-2 mt-3 text-center">
                                 <div class="bg-green-50 p-1.5 rounded text-xs">
                                     <span class="block font-bold text-green-700">{{ $p }}</span>
-                                    <span class="text-green-600">Hadir</span>
+                                    <span class="text-green-600">{{ __('Present') }}</span>
                                 </div>
                                 <div class="bg-amber-50 p-1.5 rounded text-xs">
                                     <span class="block font-bold text-amber-700">{{ $l }}</span>
-                                    <span class="text-amber-600">Telat</span>
+                                    <span class="text-amber-600">{{ __('Late') }}</span>
                                 </div>
                                  <div class="bg-red-50 p-1.5 rounded text-xs">
                                     <span class="block font-bold text-red-700">{{ $a }}</span>
-                                    <span class="text-red-600">Absen</span>
+                                    <span class="text-red-600">{{ __('Absent') }}</span>
                                 </div>
                              </div>
                         @else
                              <!-- Detail for Single Day -->
                              <div class="grid grid-cols-2 gap-4 mt-3 text-sm">
                                 <div>
-                                    <span class="text-gray-500 text-xs block">Masuk</span>
+                                    <span class="text-gray-500 text-xs block">{{ __('Time In') }}</span>
                                     <span class="font-mono text-gray-900 dark:text-white">{{ $att['time_in'] ?? '-' }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500 text-xs block">Pulang</span>
+                                    <span class="text-gray-500 text-xs block">{{ __('Time Out') }}</span>
                                     <span class="font-mono text-gray-900 dark:text-white">{{ $att['time_out'] ?? '-' }}</span>
                                 </div>
                              </div>
                              @if($att && ($att['attachment'] || $att['coordinates']))
                                 <button wire:click="show({{ $att['id'] }})" class="mt-3 w-full py-2 bg-gray-50 text-gray-600 rounded text-sm font-medium hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300">
-                                    View Details
+                                    {{ __('View Details') }}
                                 </button>
                              @endif
                         @endif

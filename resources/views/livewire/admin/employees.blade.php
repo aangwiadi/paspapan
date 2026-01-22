@@ -252,6 +252,48 @@
                              <x-input-error for="form.job_title_id" class="mt-2" />
                         </div>
                      </div>
+
+                     <!-- Basic Salary & Hourly Rate -->
+                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div x-data="{
+                            displayValue: '',
+                            model: @entangle('form.basic_salary'),
+                            format(value) {
+                                if (!value) return '';
+                                return new Intl.NumberFormat('id-ID').format(value);
+                            },
+                            update(event) {
+                                let val = event.target.value.replace(/\./g, '');
+                                if (isNaN(val)) val = 0;
+                                this.model = val;
+                                this.displayValue = this.format(val);
+                            }
+                        }" x-init="displayValue = format(model); $watch('model', value => displayValue = format(value))">
+                            <x-label for="create_basic_salary" value="{{ __('Basic Salary (Rp)') }}" />
+                            <x-input id="create_basic_salary" type="text" class="mt-1 block w-full" x-model="displayValue" @input="update" placeholder="e.g. 5.000.000" />
+                            <x-input-error for="form.basic_salary" class="mt-2" />
+                        </div>
+
+                        <div x-data="{
+                            displayValue: '',
+                            model: @entangle('form.hourly_rate'),
+                            format(value) {
+                                if (!value) return '';
+                                return new Intl.NumberFormat('id-ID').format(value);
+                            },
+                            update(event) {
+                                let val = event.target.value.replace(/\./g, '');
+                                if (isNaN(val)) val = 0;
+                                this.model = val;
+                                this.displayValue = this.format(val);
+                            }
+                        }" x-init="displayValue = format(model); $watch('model', value => displayValue = format(value))">
+                            <x-label for="create_hourly_rate" value="{{ __('Hourly Rate (Rp)') }}" />
+                            <x-input id="create_hourly_rate" type="text" class="mt-1 block w-full" x-model="displayValue" @input="update" placeholder="e.g. 25.000" />
+                            <p class="text-xs text-gray-500 mt-1">{{ __('Leave blank to auto-calc (Salary / 173)') }}</p>
+                            <x-input-error for="form.hourly_rate" class="mt-2" />
+                        </div>
+                     </div>
                  </div>
             </form>
          </x-slot>
@@ -337,6 +379,48 @@
                                 <x-tom-select id="edit_jobTitle" wire:model.live="form.job_title_id" placeholder="{{ __('Select Job Title') }}"
                                     :options="$availableJobTitles->map(fn($j) => ['id' => $j->id, 'name' => $j->name])" />
                              </div>
+                        </div>
+                     </div>
+                     
+                     <!-- Basic Salary & Hourly Rate -->
+                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div x-data="{
+                            displayValue: '',
+                            model: @entangle('form.basic_salary'),
+                            format(value) {
+                                if (!value) return '';
+                                return new Intl.NumberFormat('id-ID').format(value);
+                            },
+                            update(event) {
+                                let val = event.target.value.replace(/\./g, '');
+                                if (isNaN(val)) val = 0;
+                                this.model = val;
+                                this.displayValue = this.format(val);
+                            }
+                        }" x-init="displayValue = format(model); $watch('model', value => displayValue = format(value))">
+                            <x-label for="edit_basic_salary" value="{{ __('Basic Salary (Rp)') }}" />
+                            <x-input id="edit_basic_salary" type="text" class="mt-1 block w-full" x-model="displayValue" @input="update" placeholder="e.g. 5.000.000" />
+                            <x-input-error for="form.basic_salary" class="mt-2" />
+                        </div>
+
+                        <div x-data="{
+                            displayValue: '',
+                            model: @entangle('form.hourly_rate'),
+                            format(value) {
+                                if (!value) return '';
+                                return new Intl.NumberFormat('id-ID').format(value);
+                            },
+                            update(event) {
+                                let val = event.target.value.replace(/\./g, '');
+                                if (isNaN(val)) val = 0;
+                                this.model = val;
+                                this.displayValue = this.format(val);
+                            }
+                        }" x-init="displayValue = format(model); $watch('model', value => displayValue = format(value))">
+                            <x-label for="edit_hourly_rate" value="{{ __('Hourly Rate (Rp)') }}" />
+                            <x-input id="edit_hourly_rate" type="text" class="mt-1 block w-full" x-model="displayValue" @input="update" placeholder="e.g. 25.000" />
+                            <p class="text-xs text-gray-500 mt-1">{{ __('Leave blank to auto-calc (Salary / 173)') }}</p>
+                            <x-input-error for="form.hourly_rate" class="mt-2" />
                         </div>
                      </div>
                  </div>

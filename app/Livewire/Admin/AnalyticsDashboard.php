@@ -18,6 +18,11 @@ class AnalyticsDashboard extends Component
 
     public function mount()
     {
+        if (\App\Helpers\Editions::reportingLocked()) {
+             session()->flash('show-feature-lock', ['title' => 'Analytics Locked', 'message' => 'Advanced Analytics is an Enterprise Feature 🔒. Please Upgrade.']);
+             return redirect()->route('admin.dashboard');
+        }
+
         $this->month = date('m');
         $this->year = date('Y');
     }
@@ -50,22 +55,38 @@ class AnalyticsDashboard extends Component
         $startDate = Carbon::createFromDate($this->year, $this->month, 1);
         $endDate = $startDate->copy()->endOfMonth();
 
-        $data = Attendance::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+        $data = DB::table('attendances')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->select('date', 'status', DB::raw('count(*) as total'))
             ->groupBy('date', 'status')
             ->get();
 
+        // Remap to [date => [status => count]] for robust lookup
+        $lookup = [];
+        foreach ($data as $row) {
+            // Ensure date is Y-m-d string (truncate time if present)
+            $d = substr((string)$row->date, 0, 10);
+            $lookup[$d][$row->status] = $row->total;
+        }
+
         $trend = [];
         $current = $startDate->copy();
         
-        while ($current <= $endDate && $current <= now()) {
+        // Loop through every day of the month
+        while ($current <= $endDate) {
             $dateStr = $current->format('Y-m-d');
-            $dayData = $data->where('date', $dateStr);
             
             $trend['labels'][] = $current->format('d M');
-            $trend['present'][] = $dayData->where('status', 'present')->sum('total');
-            $trend['late'][] = $dayData->where('status', 'late')->sum('total');
-            $trend['absent'][] = $dayData->whereIn('status', ['sick', 'excused', 'alpha'])->sum('total');
+            $trend['present'][] = $lookup[$dateStr]['present'] ?? 0;
+            $trend['late'][] = $lookup[$dateStr]['late'] ?? 0;
+            
+            // Sum absent types
+            $absentCount = ($lookup[$dateStr]['sick'] ?? 0) + 
+                           ($lookup[$dateStr]['excused'] ?? 0) + 
+                           ($lookup[$dateStr]['alpha'] ?? 0) +
+                           ($lookup[$dateStr]['absent'] ?? 0);
+
+            $trend['absent'][] = $absentCount;
             
             $current->addDay();
         }
@@ -214,6 +235,42 @@ class AnalyticsDashboard extends Component
             ->toArray();
     }
 
+    public function getSummaryStatsProperty()
+    {
+        $totalEmployees = User::where('group', 'user')->count();
+        $totalWorkDays = $this->getWorkDaysInMonth();
+        $expectedTotalAttendance = $totalEmployees * $totalWorkDays;
+
+        $presentCount = Attendance::whereMonth('date', $this->month)
+            ->whereYear('date', $this->year)
+            ->where('status', 'present')
+            ->count();
+
+        $lateCount = Attendance::whereMonth('date', $this->month)
+            ->whereYear('date', $this->year)
+            ->where('status', 'late')
+            ->count();
+
+        return [
+            'total_employees' => $totalEmployees,
+            'attendance_rate' => $expectedTotalAttendance > 0 ? round(($presentCount + $lateCount) / $expectedTotalAttendance * 100, 1) : 0,
+            'late_rate' => ($presentCount + $lateCount) > 0 ? round($lateCount / ($presentCount + $lateCount) * 100, 1) : 0,
+            'avg_daily_attendance' => $totalWorkDays > 0 ? round(($presentCount + $lateCount) / $totalWorkDays) : 0,
+        ];
+    }
+
+    private function getWorkDaysInMonth()
+    {
+        $start = Carbon::createFromDate($this->year, $this->month, 1);
+        $end = $start->copy()->endOfMonth();
+        
+        // Simple calculation: Weekdays only
+        // Ideally should subtract holidays
+        return $start->diffInDaysFiltered(function (Carbon $date) {
+            return !$date->isWeekend();
+        }, $end) + 1; // inclusive
+    }
+
     public function render()
     {
         return view('livewire.admin.analytics-dashboard', [
@@ -226,6 +283,7 @@ class AnalyticsDashboard extends Component
             'topLate' => $this->topLateEmployees,
             'topEarlyLeavers' => $this->topEarlyLeavers,
             'workHoursPerDay' => (int) \App\Models\Setting::getValue('attendance.work_hours_per_day', 8),
+            'summary' => $this->summaryStats,
         ]);
     }
 }

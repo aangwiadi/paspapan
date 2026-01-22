@@ -11,7 +11,38 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Open-Core Architecture:
+        // Bind to EnterpriseService if available AND LICENSED, otherwise fallback to CommunityService.
+        $this->app->singleton(\App\Contracts\AttendanceServiceInterface::class, function ($app) {
+             if (class_exists(\App\Services\Attendance\EnterpriseService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
+                 return new \App\Services\Attendance\EnterpriseService();
+             }
+             return new \App\Services\Attendance\CommunityService();
+        });
+
+        // Payroll Service Binding (Locked)
+        $this->app->singleton(\App\Contracts\PayrollServiceInterface::class, function ($app) {
+             if (class_exists(\App\Services\Payroll\EnterprisePayrollService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
+                 return new \App\Services\Payroll\EnterprisePayrollService();
+             }
+             return new \App\Services\Payroll\CommunityPayrollService();
+        });
+
+        // Reporting Service Binding (Locked)
+        $this->app->singleton(\App\Contracts\ReportingServiceInterface::class, function ($app) {
+             if (class_exists(\App\Services\Reporting\EnterpriseReportingService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
+                 return new \App\Services\Reporting\EnterpriseReportingService();
+             }
+             return new \App\Services\Reporting\CommunityReportingService();
+        });
+
+        // Audit Service Binding (Locked)
+        $this->app->singleton(\App\Contracts\AuditServiceInterface::class, function ($app) {
+             if (class_exists(\App\Services\Audit\EnterpriseAuditService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
+                 return new \App\Services\Audit\EnterpriseAuditService();
+             }
+             return new \App\Services\Audit\CommunityAuditService();
+        });
     }
 
     /**
@@ -25,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
             if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
                 \Illuminate\Support\Facades\View::share('appName', \App\Models\Setting::getValue('app.name', config('app.name')));
                 \Illuminate\Support\Facades\View::share('companyName', \App\Models\Setting::getValue('app.company_name', 'My Company'));
+                \Illuminate\Support\Facades\View::share('companyAddress', \App\Models\Setting::getValue('app.company_address', ''));
                 \Illuminate\Support\Facades\View::share('supportContact', \App\Models\Setting::getValue('app.support_contact', ''));
             }
         } catch (\Exception $e) {

@@ -18,20 +18,30 @@ class LeaveApproval extends Component
     public $rejectionNote;
     public $selectedIds = [];
     public $confirmingRejection = false;
+    public $statusFilter = 'pending';
 
     public function render()
     {
-        // Fetch all pending requests
+        // Fetch requests based on filter
         $user = Auth::user();
-        $query = Attendance::pending()->with(['user.division']);
+        $query = Attendance::with(['user.division']);
+
+        if ($this->statusFilter !== 'all') {
+            $query->where('approval_status', $this->statusFilter);
+        }
 
         if (!$user->is_admin && !$user->is_superadmin) {
              // Only subordinates
              $subordinateIds = $user->subordinates->pluck('id');
              $query->whereIn('user_id', $subordinateIds);
         }
+        
+        // Exclude 'present' records which are not requests (unless specifically looking for them? No, Leave Approval is for requests)
+        // Usually requests have status 'sick', 'excused', 'permission', 'leave'.
+        // We should probably filter out 'present' and 'late' to avoid clogging the list if 'all' is selected.
+        $query->whereIn('status', ['sick', 'excused', 'permission', 'leave']);
 
-        $allLeaves = $query->orderBy('date', 'asc')->get();
+        $allLeaves = $query->orderBy('date', 'desc')->get(); // Changed to desc for history
 
         // Group by User ID, Status, and Note to combine related requests
         $groupedLeaves = $allLeaves->groupBy(function ($item) {

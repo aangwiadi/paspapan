@@ -36,10 +36,10 @@ class EnsureSecurityHeaders
         $csp = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net",
-            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
-            "font-src 'self' https://fonts.gstatic.com data:",
+            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://fonts.bunny.net",
+            "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:",
             "img-src 'self' data: blob: https: http:",
-            "connect-src 'self' https://tile.openstreetmap.org wss:",
+            "connect-src 'self' https://tile.openstreetmap.org https://cdn.jsdelivr.net wss:",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",

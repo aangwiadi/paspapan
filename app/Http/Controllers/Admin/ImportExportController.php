@@ -34,10 +34,10 @@ class ImportExportController extends Controller
             $groups = explode(',', $groups);
         }
 
-        return Excel::download(
-            new UsersExport($groups),
-            'users.xlsx'
-        );
+        $service = app(\App\Contracts\ReportingServiceInterface::class);
+        $response = $service->exportUsers($groups);
+
+        return $this->handleServiceResponse($response);
     }
 
     public function exportAttendances(Request $request)
@@ -48,30 +48,18 @@ class ImportExportController extends Controller
         $job_title = $request->input('job_title');
         $education = $request->input('education');
 
-        $divName = $division ? Division::find($division)?->name : null;
-        $jobName = $job_title ? JobTitle::find($job_title)?->name : null;
-        $eduName = $education ? Education::find($education)?->name : null;
+        $service = app(\App\Contracts\ReportingServiceInterface::class);
+        $response = $service->exportAttendances($month, $year, $division, $job_title, $education);
 
-        $filename = 'attendances' 
-            . ($month ? '_' . Carbon::parse($month)->format('F-Y') : '') 
-            . ($year && !$month ? '_' . $year : '') 
-            . ($divName ? '_' . Str::slug($divName) : '') 
-            . ($jobName ? '_' . Str::slug($jobName) : '') 
-            . ($eduName ? '_' . Str::slug($eduName) : '') 
-            . '.xlsx';
-
-        return Excel::download(new AttendancesExport(
-            $month,
-            $year,
-            $division,
-            $job_title,
-            $education
-        ), $filename);
+        return $this->handleServiceResponse($response);
     }
 
     public function exportActivityLogs()
     {
-        return Excel::download(new ActivityLogsExport, 'activity-logs-' . now()->format('Y-m-d') . '.xlsx');
+        $service = app(\App\Contracts\ReportingServiceInterface::class);
+        $response = $service->exportActivityLogs();
+
+        return $this->handleServiceResponse($response);
     }
 
     public function exportReportPdf(Request $request)
@@ -79,23 +67,19 @@ class ImportExportController extends Controller
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
 
-        $date = Carbon::createFromDate($year, $month, 1);
+        $service = app(\App\Contracts\ReportingServiceInterface::class);
+        $response = $service->exportMonthlyReportPdf($month, $year);
         
-        $attendances = Attendance::with('user', 'shift')
-            ->whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->orderBy('date')
-            ->get()
-            ->groupBy('user_id');
-            
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.monthly_pdf', [
-            'attendances' => $attendances,
-            'month' => $date->format('F'),
-            'year' => $year,
-            'date' => $date
-        ])->setPaper('a4', 'landscape');
+        return $this->handleServiceResponse($response);
+    }
 
-        return $pdf->download('monthly-report-' . $date->format('F-Y') . '.pdf');
+    protected function handleServiceResponse($response)
+    {
+        if ($response === null) {
+            // Community Edition Lock
+            return back()->with('flash.banner', 'Advanced Reporting is an Enterprise Feature 🔒. Please Upgrade.')->with('flash.bannerStyle', 'danger');
+        }
+        return $response;
     }
 
     public function importUsers(Request $request)

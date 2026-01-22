@@ -9,9 +9,17 @@
                     {{ __('Review and manage your team\'s leave requests.') }}
                 </p>
             </div>
-        </div>
+                <div class="flex items-center gap-2">
+                    <select wire:model.live="statusFilter" class="text-sm rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="pending">{{ __('Pending') }}</option>
+                        <option value="approved">{{ __('Approved') }}</option>
+                        <option value="rejected">{{ __('Rejected') }}</option>
+                        <option value="all">{{ __('All') }}</option>
+                    </select>
+                </div>
+            </div>
 
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="mx-auto max-w-7xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="overflow-x-auto">
                 <table class="w-full whitespace-nowrap text-left text-sm">
                     <thead class="bg-gray-50 text-gray-500 dark:bg-gray-700/50 dark:text-gray-400">
@@ -63,6 +71,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300 max-w-xs truncate">
                                     {{ $firstLeave->note }}
+                                    @if($firstLeave->approval_status === 'rejected' && $firstLeave->rejection_note)
+                                        <div class="text-xs text-red-500 mt-1">{{ __('Reason') }}: {{ $firstLeave->rejection_note }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
                                     @if ($firstLeave->attachment)
@@ -75,14 +86,21 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button wire:click="approve({{ json_encode($leaveIds) }})" class="text-gray-400 hover:text-green-600 transition-colors" title="{{ __('Approve') }}">
-                                            <x-heroicon-m-check-circle class="h-6 w-6" />
-                                        </button>
-                                        <button wire:click="confirmReject({{ json_encode($leaveIds) }})" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Reject') }}">
-                                            <x-heroicon-m-x-circle class="h-6 w-6" />
-                                        </button>
-                                    </div>
+                                    @if($firstLeave->approval_status === 'pending')
+                                        <div class="flex justify-end gap-2">
+                                            <button wire:click="approve({{ json_encode($leaveIds) }})" class="text-gray-400 hover:text-green-600 transition-colors" title="{{ __('Approve') }}">
+                                                <x-heroicon-m-check-circle class="h-6 w-6" />
+                                            </button>
+                                            <button wire:click="confirmReject({{ json_encode($leaveIds) }})" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Reject') }}">
+                                                <x-heroicon-m-x-circle class="h-6 w-6" />
+                                            </button>
+                                        </div>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                                            {{ $firstLeave->approval_status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' }}">
+                                            {{ __($firstLeave->approval_status) }}
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

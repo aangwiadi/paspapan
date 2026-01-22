@@ -42,12 +42,17 @@
                     </div>
 
                     <!-- Export Button -->
-                    <div class="flex-none">
-                         <a href="{{ route('admin.activity-logs.export', ['search' => $search, 'start_date' => $dateStart ?: null, 'end_date' => $dateEnd ?: null]) }}" target="_system" class="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                            <svg class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <div class="flex-none">
+                         <a href="{{ route('admin.activity-logs.export', ['search' => $search, 'start_date' => $dateStart ?: null, 'end_date' => $dateEnd ?: null]) }}" target="_system" 
+                            @if(\App\Helpers\Editions::auditLocked()) 
+                                @click.prevent="$dispatch('feature-lock', { title: 'Audit Export Locked', message: 'Audit Logs Export is an Enterprise Feature 🔒. Please Upgrade.' })"
+                            @endif
+                            class="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                             <svg class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             {{ __('Export Excel') }}
+                            @if(\App\Helpers\Editions::auditLocked()) 🔒 @endif
                         </a>
                     </div>
                 </div>

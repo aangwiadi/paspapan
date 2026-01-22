@@ -96,8 +96,8 @@
                             <p class="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">{{ $holiday->description }}</p>
                         @endif
                         <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700/50 mt-2">
-                             <button wire:click="edit({{ $holiday->id }})" class="text-blue-600 dark:text-blue-400 text-sm font-medium">Edit</button>
-                             <button wire:click="delete({{ $holiday->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-red-600 dark:text-red-400 text-sm font-medium">Delete</button>
+                             <button wire:click="edit({{ $holiday->id }})" class="text-blue-600 dark:text-blue-400 text-sm font-medium">{{ __('Edit') }}</button>
+                             <button wire:click="delete({{ $holiday->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-red-600 dark:text-red-400 text-sm font-medium">{{ __('Delete') }}</button>
                         </div>
                     </div>
                 @endforeach
@@ -125,7 +125,7 @@
                     </div>
                     <div>
                         <x-label for="name" value="{{ __('Holiday Name') }}" />
-                        <x-input id="name" type="text" class="mt-1 block w-full" wire:model="name" placeholder="e.g. Christmas Day" required />
+                        <x-input id="name" type="text" class="mt-1 block w-full" wire:model="name" placeholder="{{ __('e.g. Christmas Day') }}" required />
                         <x-input-error for="name" class="mt-2" />
                     </div>
                      <div>

@@ -192,9 +192,13 @@
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-800 dark:ring-white/10">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ __('Upcoming Leaves') }}</h3>
-                 <a href="{{ route('admin.reports.export-pdf') }}" target="_system" 
+                <a href="{{ route('admin.reports.export-pdf') }}" target="_system" 
+                    @if(\App\Helpers\Editions::reportingLocked()) 
+                        @click.prevent="$dispatch('feature-lock', { title: 'Export Locked', message: 'Advanced Reporting is an Enterprise Feature 🔒. Please Upgrade.' })"
+                    @endif
                    class="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
                     {{ __('Export') }}
+                    @if(\App\Helpers\Editions::reportingLocked()) 🔒 @endif
                 </a>
             </div>
             <div class="space-y-3">
@@ -292,8 +296,11 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->jobTitle?->name ?? __('Staff') }}</p>
                             </div>
                         </div>
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusColor }}">
+                        <span class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusColor }}">
                             {{ $statusLabel }}
+                            @if($attendance && $attendance->is_suspicious)
+                                <span title="{{ $attendance->suspicious_reason }}" class="cursor-help text-red-500">⚠️</span>
+                            @endif
                         </span>
                     </div>
                     
@@ -405,9 +412,12 @@
                                 {{ $attendance->shift?->name ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusBg }}">
+                                <span class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusBg }}">
                                     <span class="mr-1.5 h-1.5 w-1.5 rounded-full {{ $statusDot }}"></span>
                                     {{ __($statusLabel) }}
+                                    @if($attendance && $attendance->is_suspicious)
+                                        <span title="{{ $attendance->suspicious_reason }}" class="cursor-help text-red-500 ml-1">⚠️</span>
+                                    @endif
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600 dark:text-gray-300">
@@ -418,8 +428,8 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                  @if ($attendance && ($attendance->attachment || $attendance->note || $attendance->lat_lng))
-                                    <button wire:click="show({{ $attendance->id }})" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                        {{ __('Detail') }}
+                                    <button wire:click="show({{ $attendance->id }})" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ __('Detail') }}">
+                                        <x-heroicon-m-eye class="h-5 w-5" />
                                     </button>
                                 @endif
                             </td>

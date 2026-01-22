@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ImportExportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserAttendanceController;
+use App\Http\Controllers\AttendancePhotoController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
@@ -23,6 +24,11 @@ Route::get('/test-error/{code}', function ($code) {
     abort($code);
 });
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attendance/photo/{attendance}/{type}/{index?}', [AttendancePhotoController::class, 'show'])
+        ->name('attendance.photo');
+});
 
 
 Route::middleware([
@@ -40,6 +46,12 @@ Route::middleware([
             ->name('apply-leave');
         Route::post('/apply-leave', [UserAttendanceController::class, 'storeLeaveRequest'])
             ->name('store-leave-request');
+
+        // Enterprise V2.0: Secure Attachment Download
+        Route::get('/secure-attachment/{attendance}', [UserAttendanceController::class, 'downloadAttachment'])
+            ->name('attendance.attachment.download');
+        
+
 
         Route::get('/attendance-history', [UserAttendanceController::class, 'history'])
             ->name('attendance-history');
@@ -61,6 +73,15 @@ Route::middleware([
             
         Route::get('/approvals/history', \App\Livewire\TeamApprovalsHistory::class)
             ->name('approvals.history');
+
+        Route::get('/overtime', \App\Livewire\OvertimeRequest::class)
+            ->name('overtime');
+
+        Route::get('/payroll', \App\Livewire\MyPayslips::class)
+            ->name('my-payslips');
+
+        Route::get('/face-enrollment', \App\Livewire\FaceEnrollment::class)
+            ->name('face.enrollment');
     });
 
     // ADMIN AREA
@@ -142,6 +163,9 @@ Route::middleware([
 
         Route::get('/leaves', \App\Livewire\Admin\LeaveApproval::class)
             ->name('admin.leaves');
+
+        Route::get('/overtime', \App\Livewire\Admin\OvertimeManager::class)
+            ->name('admin.overtime');
         
         Route::get('/analytics', \App\Livewire\Admin\AnalyticsDashboard::class)
             ->name('admin.analytics');
@@ -158,6 +182,14 @@ Route::middleware([
         // Reimbursements (v1.3.0)
         Route::get('/reimbursements', \App\Livewire\Admin\ReimbursementManager::class)
             ->name('admin.reimbursements');
+            
+        // Payroll Settings
+        Route::get('/payrolls/settings', \App\Livewire\Admin\PayrollSettings::class)
+            ->name('admin.payroll.settings');
+
+        // Payroll (v2.0)
+        Route::get('/payrolls', \App\Livewire\PayrollManager::class)
+            ->name('admin.payrolls');
     });
 });
 

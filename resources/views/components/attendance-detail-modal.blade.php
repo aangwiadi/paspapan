@@ -95,15 +95,17 @@
                             <div class="grid grid-cols-2 gap-2 mt-2">
                                 @foreach ($attachments as $key => $url)
                                     <div>
-                                        <p class="text-xs text-gray-500 mb-1 capitalize">{{ $key }}</p>
-                                        <img src="{{ $url }}" alt="Attachment {{ $key }}"
-                                            class="max-h-48 w-full object-contain rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <x-label value="{{ __(ucfirst($key)) }}" class="mb-1" />
+                                        <img src="{{ route('attendance.photo', ['attendance' => $currentAttendance['id'], 'type' => is_string($key) ? $key : 'general', 'index' => $key]) }}" 
+                                             alt="Attachment {{ $key }}"
+                                             class="max-h-48 w-full object-contain rounded-lg border border-gray-200 dark:border-gray-700">
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <img src="{{ $attachments }}" alt="Attachment"
-                                class="mt-2 max-h-64 w-full object-contain rounded-lg border border-gray-200 dark:border-gray-700">
+                            <img src="{{ route('attendance.photo', ['attendance' => $currentAttendance['id'], 'type' => 'general']) }}" 
+                                 alt="Attachment"
+                                 class="mt-2 max-h-64 w-full object-contain rounded-lg border border-gray-200 dark:border-gray-700">
                         @endif
                     </div>
                 @endif
@@ -157,7 +159,7 @@
                                         📍 {{ number_format($currentAttendance['latitude_in'], 6) }},
                                         {{ number_format($currentAttendance['longitude_in'], 6) }}
                                     </a>
-                                    <div class="h-64 w-full rounded-lg overflow-hidden border-2 border-blue-200 dark:border-blue-800"
+                                    <div wire:ignore class="h-64 w-full rounded-lg overflow-hidden border-2 border-blue-200 dark:border-blue-800"
                                         id="map_in"></div>
                                 </div>
                             @endif
@@ -180,7 +182,7 @@
                                         📍 {{ number_format($currentAttendance['latitude_out'], 6) }},
                                         {{ number_format($currentAttendance['longitude_out'], 6) }}
                                     </a>
-                                    <div class="h-64 w-full rounded-lg overflow-hidden border-2 border-orange-200 dark:border-orange-800"
+                                    <div wire:ignore class="h-64 w-full rounded-lg overflow-hidden border-2 border-orange-200 dark:border-orange-800"
                                         id="map_out"></div>
                                 </div>
                             @endif
@@ -188,13 +190,35 @@
 
                         {{-- Distance Calculation --}}
                         @if ($hasCheckIn && $hasCheckOut)
+                            @php
+                                // Calculate distance in PHP (Haversine formula)
+                                $lat1 = deg2rad($currentAttendance['latitude_in']);
+                                $lat2 = deg2rad($currentAttendance['latitude_out']);
+                                $lon1 = deg2rad($currentAttendance['longitude_in']);
+                                $lon2 = deg2rad($currentAttendance['longitude_out']);
+                                
+                                $dlat = $lat2 - $lat1;
+                                $dlon = $lon2 - $lon1;
+                                
+                                $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+                                $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+                                $distance = 6371000 * $c; // Distance in meters
+                                
+                                if ($distance < 1000) {
+                                    $distanceText = number_format($distance, 2) . ' meters';
+                                    $colorClass = $distance < 100 ? 'text-green-600 dark:text-green-400' : ($distance < 500 ? 'text-yellow-600 dark:text-yellow-400' : 'text-orange-600 dark:text-orange-400');
+                                } else {
+                                    $distanceText = number_format($distance / 1000, 2) . ' km';
+                                    $colorClass = 'text-red-600 dark:text-red-400';
+                                }
+                            @endphp
                             <div
-                                class="mt-4 p-3 from-blue-50 to-orange-50 dark:from-blue-900 dark:to-orange-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                                class="mt-4 p-3 bg-gradient-to-r from-blue-50 to-orange-50 dark:from-blue-900/30 dark:to-orange-900/30 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">
                                         🗺️ {{ __('Distance Check In - Check Out') }}:
                                     </span>
-                                    <span id="distance-info" class="font-bold text-sm">{{ __('Calculating...') }}</span>
+                                    <span class="font-bold text-sm {{ $colorClass }}">{{ $distanceText }}</span>
                                 </div>
                             </div>
                         @endif
@@ -277,27 +301,25 @@
             if (mapInEl && latIn && lngIn) {
                 attendanceMaps.in = L.map('map_in').setView([Number(latIn), Number(lngIn)], 18);
 
-                const blueIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: '<div style="background: #3b82f6; width: 32px; height: 32px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-
-                L.marker([Number(latIn), Number(lngIn)], {
-                        icon: blueIcon
-                    })
-                    .addTo(attendanceMaps.in)
-                    .bindPopup('<b>📍 {{ __('Check In Location') }}</b>');
-
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '© OpenStreetMap'
                 }).addTo(attendanceMaps.in);
+
+                // Use circleMarker instead of divIcon for reliability
+                L.circleMarker([Number(latIn), Number(lngIn)], {
+                    radius: 12,
+                    fillColor: '#3b82f6',
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 1
+                }).addTo(attendanceMaps.in)
+                  .bindPopup('<b>📍 {{ __("Check In Location") }}</b>');
                 
                 // Force map resize calculation after render
                 setTimeout(() => {
-                    attendanceMaps.in.invalidateSize();
+                    if (attendanceMaps.in) attendanceMaps.in.invalidateSize();
                 }, 100);
             }
 
@@ -306,33 +328,26 @@
             if (mapOutEl && latOut && lngOut) {
                 attendanceMaps.out = L.map('map_out').setView([Number(latOut), Number(lngOut)], 18);
 
-                const orangeIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: '<div style="background: #f97316; width: 32px; height: 32px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-
-                L.marker([Number(latOut), Number(lngOut)], {
-                        icon: orangeIcon
-                    })
-                    .addTo(attendanceMaps.out)
-                    .bindPopup('<b>📍 {{ __('Check Out Location') }}</b>');
-
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '© OpenStreetMap'
                 }).addTo(attendanceMaps.out);
+
+                // Use circleMarker instead of divIcon for reliability
+                L.circleMarker([Number(latOut), Number(lngOut)], {
+                    radius: 12,
+                    fillColor: '#f97316',
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 1
+                }).addTo(attendanceMaps.out)
+                  .bindPopup('<b>📍 {{ __("Check Out Location") }}</b>');
                 
                 // Force map resize calculation after render
                 setTimeout(() => {
-                    attendanceMaps.out.invalidateSize();
+                    if (attendanceMaps.out) attendanceMaps.out.invalidateSize();
                 }, 100);
-            }
-
-            // Calculate Distance
-            if (latIn && lngIn && latOut && lngOut) {
-                calculateDistance(latIn, lngIn, latOut, lngOut);
             }
         }
 

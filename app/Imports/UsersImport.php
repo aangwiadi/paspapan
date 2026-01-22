@@ -8,6 +8,7 @@ use App\Models\JobTitle;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -16,6 +17,8 @@ use Maatwebsite\Excel\Validators\Failure;
 
 class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
+    use SkipsFailures;
+
     public function __construct(public bool $save = true)
     {
     }
@@ -27,6 +30,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
      */
     public function model(array $row)
     {
+        // ... existing logic ...
         $division_id = Division::where('name', $row['division'])->first()?->id
             ?? Division::create(['name' => $row['division']])?->id;
         $job_title_id = JobTitle::where('name', $row['job_title'])->first()?->id
@@ -35,11 +39,14 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             ?? Education::create(['name' => $row['education']])?->id;
         $user = (new User)->forceFill([
             'id' => isset($row['id']) ? $row['id'] : null,
-            'nip' => $row['nip'],
+            'nip' => (string) $row['nip'],
             'name' => $row['name'],
             'email' => $row['email'],
-            'phone' => $row['phone'],
+            'group' => $row['group'] ?? 'user',
+            'phone' => (string) $row['phone'],
             'gender' => $row['gender'],
+            'basic_salary' => $row['basic_salary'] ?? 0,
+            'hourly_rate' => $row['hourly_rate'] ?? 0,
             'birth_date' => $row['birth_date'],
             'birth_place' => $row['birth_place'],
             'address' => $row['address'],
@@ -48,11 +55,13 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'division_id' => $division_id,
             'job_title_id' => $job_title_id,
             'password' => Hash::make($row['password']),
-            'created_at' => $row['created_at'],
-            'updated_at' => $row['updated_at'],
+            'created_at' => isset($row['created_at']) ? $row['created_at'] : \Carbon\Carbon::now(),
+            'updated_at' => \Carbon\Carbon::now(),
         ]);
+        
         if ($this->save) {
             $user->save();
+            \Illuminate\Support\Facades\Log::info('User imported successfully: ' . $user->email);
         }
         return $user;
     }
@@ -60,18 +69,12 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
     public function rules(): array
     {
         return [
-            'nip' => ['required', 'string', Rule::unique('users', 'nip')],
+            'nip' => ['required', Rule::unique('users', 'nip')],
             'name' => ['required', 'string'],
             'email' => ['required', 'string', Rule::unique('users', 'email')],
+            'phone' => ['nullable', Rule::unique('users', 'phone')],
             'gender' => ['required', 'string'],
-            // 'education' => ['nullable', 'exists:educations,name'],
-            // 'division' => ['nullable', 'exists:divisions,name'],
-            // 'job_title' => ['nullable', 'exists:job_titles,name'],
             'password' => ['required', 'string'],
         ];
-    }
-
-    public function onFailure(Failure ...$failures)
-    {
     }
 }

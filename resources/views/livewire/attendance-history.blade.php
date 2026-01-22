@@ -80,11 +80,18 @@
                         $markerColor = match($status) {
                             'present' => 'bg-emerald-500',
                             'late' => 'bg-amber-500',
-                            'excused', 'sick' => match($attendance['approval_status'] ?? 'approved') {
+                            'excused', 'sick', 'permission', 'leave' => match($attendance['approval_status'] ?? 'approved') {
                                 'pending' => 'bg-amber-300',
-                                'rejected' => 'bg-rose-300', // Light/Whitish Red
-                                default => $status === 'excused' ? 'bg-sky-500' : 'bg-violet-500'
+                                'rejected' => 'bg-rose-500',
+                                default => match($status) {
+                                    'excused' => 'bg-sky-500',
+                                    'sick' => 'bg-violet-500',
+                                    'permission' => 'bg-teal-500',
+                                    'leave' => 'bg-indigo-500',
+                                    default => 'bg-gray-400'
+                                }
                             },
+                            'rejected' => 'bg-rose-500',
                             'absent' => 'bg-red-700', // Dark Red
                             default => $isToday ? 'bg-primary-500' : null
                         };

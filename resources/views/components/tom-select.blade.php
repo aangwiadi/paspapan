@@ -15,7 +15,7 @@
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
         font-size: 0.875rem; /* text-sm */
         line-height: 1.25rem;
-        min-height: 42px; /* Standard input height */
+        min-height: 36px; /* Reduced to match smaller inputs */
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
@@ -35,8 +35,8 @@
     }
     
     .ts-wrapper.focus .ts-control {
-        border-color: #6366f1; /* primary-500 */
-        box-shadow: 0 0 0 1px #6366f1;
+        border-color: #6ab45b; /* primary-500 */
+        box-shadow: 0 0 0 1px #6ab45b;
     }
 
     /* Dropdown */
@@ -75,8 +75,8 @@
     }
 
     .dark .ts-wrapper.focus .ts-control {
-        border-color: #6366f1 !important; /* primary-500 */
-        box-shadow: 0 0 0 1px #6366f1 !important;
+        border-color: #6ab45b !important; /* primary-500 */
+        box-shadow: 0 0 0 1px #6ab45b !important;
     }
 
     .dark .ts-dropdown {

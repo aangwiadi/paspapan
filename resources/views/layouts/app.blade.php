@@ -85,10 +85,19 @@
     </div>
 
     @stack('modals')
+    <x-feature-lock-modal />
     <script>
         window.isNativeApp = function() {
             return !!window.Capacitor && window.Capacitor.isNativePlatform();
         };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            @if(session('show-feature-lock'))
+                window.dispatchEvent(new CustomEvent('feature-lock', {
+                    detail: @json(session('show-feature-lock'))
+                }));
+            @endif
+        });
     </script>
     
     <script src="{{ asset('js/pulltorefresh.js') }}"></script>
@@ -142,17 +151,25 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Toast Configuration
+            // Toast Configuration
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true,
+                background: 'transparent',
+                customClass: {
+                    popup: '!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !rounded-3xl !shadow-xl !border !border-gray-100 dark:!border-gray-700/50 !px-4 !py-3 !w-auto !max-w-[90vw] !mx-auto !mt-4',
+                    title: '!text-sm !font-bold',
+                    timerProgressBar: '!bg-primary-500 !h-1'
+                },
                 didOpen: (toast) => {
                     toast.addEventListener('mouseenter', Swal.stopTimer)
                     toast.addEventListener('mouseleave', Swal.resumeTimer)
                 }
             });
+            window.Toast = Toast;
 
             // Listen for Livewire Events
             if (typeof Livewire !== 'undefined') {
@@ -210,6 +227,13 @@
                 Toast.fire({
                     icon: 'info',
                     title: "{{ session('info') }}"
+                });
+            @endif
+
+            @if(session('flash.banner'))
+                Toast.fire({
+                    icon: 'success',
+                    title: "{{ session('flash.banner') }}"
                 });
             @endif
         });

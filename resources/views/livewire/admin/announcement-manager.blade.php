@@ -96,11 +96,11 @@
                         </div>
                         <div class="flex items-center justify-between pt-2">
                              <button wire:click="toggleActive({{ $announcement->id }})" class="text-xs font-medium {{ $announcement->is_active ? 'text-green-600' : 'text-gray-400' }}">
-                                 {{ $announcement->is_active ? 'Active' : 'Inactive' }}
+                                 {{ $announcement->is_active ? __('Active') : __('Inactive') }}
                              </button>
                              <div class="flex gap-3">
-                                 <button wire:click="edit({{ $announcement->id }})" class="text-blue-600 dark:text-blue-400 text-sm font-medium">Edit</button>
-                                 <button wire:click="delete({{ $announcement->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-red-600 dark:text-red-400 text-sm font-medium">Delete</button>
+                                 <button wire:click="edit({{ $announcement->id }})" class="text-blue-600 dark:text-blue-400 text-sm font-medium">{{ __('Edit') }}</button>
+                                 <button wire:click="delete({{ $announcement->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-red-600 dark:text-red-400 text-sm font-medium">{{ __('Delete') }}</button>
                              </div>
                         </div>
                     </div>

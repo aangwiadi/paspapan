@@ -43,6 +43,10 @@ class User extends Authenticatable
         'job_title_id',
         'profile_photo_path',
         'language',
+        'basic_salary',
+        'hourly_rate',
+        'payslip_password',
+        'payslip_password_set_at',
     ];
 
     /**
@@ -52,6 +56,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'payslip_password',
         'raw_password',
         'remember_token',
         'two_factor_recovery_codes',
@@ -171,5 +176,34 @@ class User extends Authenticatable
                 $q->where('rank', '>', $myRank);
             })
             ->get();
+    }
+
+    /**
+     * Check if the user has a valid (non-expired) payslip password.
+     * Expired if set > 3 months ago.
+     */
+    public function hasValidPayslipPassword(): bool
+    {
+        if (!$this->payslip_password || !$this->payslip_password_set_at) {
+            return false;
+        }
+
+        return \Illuminate\Support\Carbon::parse($this->payslip_password_set_at)->diffInMonths(now()) < 3;
+    }
+
+    /**
+     * Get the user's face descriptor.
+     */
+    public function faceDescriptor()
+    {
+        return $this->hasOne(FaceDescriptor::class);
+    }
+
+    /**
+     * Check if the user has a registered face.
+     */
+    public function hasFaceRegistered(): bool
+    {
+        return $this->faceDescriptor()->exists();
     }
 }

@@ -28,9 +28,195 @@
         {{-- Camera Flash Effect --}}
         <div id="camera-flash" class="fixed inset-0 bg-white z-[60] pointer-events-none opacity-0 transition-opacity duration-200"></div>
 
+        {{-- Face Verification Modal --}}
+        @if($requiresFaceVerification && $userFaceDescriptor)
+            <div 
+                x-data="faceVerificationModal()"
+                x-show="showModal"
+                x-cloak
+                class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                @face-verify.window="openModal($event.detail)"
+            >
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" @click.stop>
+                    {{-- Header --}}
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="p-1.5 bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400 rounded-lg">👤</span>
+                            {{ __('Face Verification') }}
+                        </h3>
+                        <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+
+                    {{-- Camera Preview --}}
+                    <div class="p-6">
+                        <div class="relative aspect-square bg-gray-900 rounded-xl overflow-hidden mb-4">                 <video x-ref="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                            <canvas x-ref="overlay" class="absolute inset-0 w-full h-full"></canvas>
+                            
+                            {{-- Status Indicator --}}
+                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/60 backdrop-blur rounded-full text-white text-sm font-medium">
+                                <span x-show="status === 'loading'" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    {{ __('Loading...') }}
+                                </span>
+                                <span x-show="status === 'ready'" class="text-yellow-400">{{ __('Look at the camera') }}</span>
+                                <span x-show="status === 'verifying'" class="text-blue-400">{{ __('Verifying...') }}</span>
+                                <span x-show="status === 'matched'" class="text-green-400 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                    {{ __('Face matched!') }}
+                                </span>
+                                <span x-show="status === 'failed'" class="text-red-400">{{ __('Face not matched. Try again.') }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Actions --}}
+                        <div class="flex gap-3">
+                            <button @click="closeModal()" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold transition">
+                                {{ __('Cancel') }}
+                            </button>
+                            <button 
+                                @click="verify()" 
+                                :disabled="status !== 'ready'"
+                                :class="status === 'ready' ? 'bg-primary-600 hover:bg-primary-700' : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'"
+                                class="flex-1 px-4 py-3 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                            >
+                                {{ __('Verify') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @pushOnce('scripts')
+            <script src="{{ asset('assets/js/face-api.min.js') }}"></script>
+            <script>
+                const storedFaceDescriptor = @json($userFaceDescriptor);
+
+                function faceVerificationModal() {
+                    return {
+                        showModal: false,
+                        status: 'loading',
+                        stream: null,
+                        detectionInterval: null,
+                        pendingCallback: null,
+                        modelsLoaded: false,
+
+                        async openModal(detail) {
+                            this.pendingCallback = detail.callback;
+                            this.showModal = true;
+                            this.status = 'loading';
+                            
+                            await this.$nextTick();
+                            await this.init();
+                        },
+
+                        closeModal() {
+                            this.cleanup();
+                            this.showModal = false;
+                            this.status = 'loading';
+                            this.pendingCallback = null;
+                        },
+
+                        async init() {
+                            try {
+                                // Load models if not already loaded
+                                if (!this.modelsLoaded) {
+                                    const MODEL_URL = '{{ asset('models') }}';
+                                    await Promise.all([
+                                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                                    ]);
+                                    this.modelsLoaded = true;
+                                }
+
+                                // Start front camera
+                                this.stream = await navigator.mediaDevices.getUserMedia({
+                                    video: { facingMode: 'user', width: 480, height: 480 }
+                                });
+                                this.$refs.video.srcObject = this.stream;
+                                await new Promise(resolve => { this.$refs.video.onloadedmetadata = resolve; });
+
+                                this.status = 'ready';
+                            } catch (error) {
+                                console.error('Face verification init error:', error);
+                                this.status = 'failed';
+                            }
+                        },
+
+                        async verify() {
+                            if (this.status !== 'ready') return;
+                            this.status = 'verifying';
+
+                            const video = this.$refs.video;
+                            const detection = await faceapi
+                                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                .withFaceLandmarks()
+                                .withFaceDescriptor();
+
+                            if (!detection) {
+                                this.status = 'failed';
+                                setTimeout(() => { this.status = 'ready'; }, 2000);
+                                return;
+                            }
+
+                            const capturedDescriptor = detection.descriptor;
+                            const distance = faceapi.euclideanDistance(capturedDescriptor, new Float32Array(storedFaceDescriptor));
+
+                            // Threshold: 0.6 is standard (lower = stricter)
+                            if (distance < 0.6) {
+                                this.status = 'matched';
+                                setTimeout(() => {
+                                    if (this.pendingCallback) {
+                                        this.pendingCallback();
+                                    }
+                                    this.closeModal();
+                                }, 1000);
+                            } else {
+                                this.status = 'failed';
+                                setTimeout(() => { this.status = 'ready'; }, 2000);
+                            }
+                        },
+
+                        cleanup() {
+                            if (this.stream) {
+                                this.stream.getTracks().forEach(track => track.stop());
+                                this.stream = null;
+                            }
+                        }
+                    };
+                }
+            </script>
+            @endpushOnce
+        @endif
+
         @include('components.alert-messages')
 
-        @if ($isComplete)
+        @if($approvedAbsence)
+            <div class="w-full max-w-md mx-auto bg-white rounded-3xl shadow-xl overflow-hidden p-8 text-center mt-6">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-4xl">✅</span>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ __('You are on Leave') }}</h2>
+                <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-green-100 text-green-700 mb-6">
+                    {{ __(ucfirst($approvedAbsence->status)) }}
+                </div>
+
+                <div class="bg-gray-50 rounded-2xl p-4 mb-6 text-left">
+                    <p class="text-sm text-gray-500 mb-1">{{ __('Date') }}</p>
+                    <p class="font-semibold text-gray-900 mb-3">{{ $approvedAbsence->date->format('d F Y') }}</p>
+                    
+                    <p class="text-sm text-gray-500 mb-1">{{ __('Note') }}</p>
+                    <p class="font-semibold text-gray-900 italic">"{{ $approvedAbsence->note }}"</p>
+                </div>
+
+                <a href="{{ route('home') }}" class="block w-full py-4 rounded-xl bg-gray-900 text-white font-bold shadow-lg hover:shadow-xl hover:bg-black transition transform hover:-translate-y-1">
+                    {{ __('Back to Dashboard') }}
+                </a>
+            </div>
+        @elseif ($isComplete)
             {{-- Completion View --}}
             <div class="space-y-4 sm:space-y-6">
                 {{-- Success Message --}}
@@ -179,16 +365,17 @@
             maps: {},
             userLat: null,
             userLng: null,
-            isRefreshing: false,
-            userLat: null,
-            userLng: null,
+            userAccuracy: null,
+            gpsVariance: null,
             isRefreshing: false,
             facingMode: 'environment', // Start with back camera for scanning
             lastPhoto: null,
             requirePhoto: {{ $requirePhoto ? 'true' : 'false' }},
             isSelfieMode: false,
             scannedCode: null,
-            timeSettings: @json($timeSettings)
+            timeSettings: @json($timeSettings),
+            requiresFaceVerification: {{ ($requiresFaceVerification && $userFaceDescriptor) ? 'true' : 'false' }},
+            approvedAbsence: {{ $approvedAbsence ? 'true' : 'false' }}
         };
 
         // Toggle Map Function
@@ -295,51 +482,89 @@
             });
         };
 
-        async function getLocation(isRefresh = false) {
-            try {
-                let lat, lng;
-
-                if (window.Capacitor?.isNativePlatform?.()) {
-                    const perm = await Capacitor.Plugins.Geolocation.requestPermissions();
-
-                    if (perm.location !== 'granted') {
-                        throw new Error('Location permission denied');
-                    }
-
-                    const position = await Capacitor.Plugins.Geolocation.getCurrentPosition({
+        // Enhanced GPS sampling for fake GPS detection
+        async function getSingleGpsReading() {
+            if (window.Capacitor?.isNativePlatform?.()) {
+                const perm = await Capacitor.Plugins.Geolocation.requestPermissions();
+                if (perm.location !== 'granted') {
+                    throw new Error('Location permission denied');
+                }
+                return await Capacitor.Plugins.Geolocation.getCurrentPosition({
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            } else {
+                if (!navigator.geolocation) {
+                    throw new Error('Geolocation not supported');
+                }
+                return await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: true,
                         timeout: 10000,
                         maximumAge: 0
                     });
+                });
+            }
+        }
 
-                    lat = position.coords.latitude.toFixed(6);
-                    lng = position.coords.longitude.toFixed(6);
-                } else {
-                    if (!navigator.geolocation) {
-                        throw new Error('Geolocation not supported');
-                    }
+        // Calculate standard deviation (variance) of coordinates
+        function calculateGpsVariance(samples) {
+            if (samples.length < 2) return 0;
+            
+            const lats = samples.map(s => s.lat);
+            const lngs = samples.map(s => s.lng);
+            
+            const avgLat = lats.reduce((a, b) => a + b) / lats.length;
+            const avgLng = lngs.reduce((a, b) => a + b) / lngs.length;
+            
+            const latVariance = lats.reduce((sum, lat) => sum + Math.pow(lat - avgLat, 2), 0) / lats.length;
+            const lngVariance = lngs.reduce((sum, lng) => sum + Math.pow(lng - avgLng, 2), 0) / lngs.length;
+            
+            return Math.sqrt(latVariance + lngVariance);
+        }
 
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(
-                            resolve,
-                            reject, {
-                                enableHighAccuracy: true,
-                                timeout: 10000,
-                                maximumAge: 0
-                            }
-                        );
+        async function getLocation(isRefresh = false) {
+            try {
+                // Collect 3 GPS samples for fake GPS detection
+                const samples = [];
+                const sampleCount = 3;
+                const delayMs = 400;
+                
+                for (let i = 0; i < sampleCount; i++) {
+                    const position = await getSingleGpsReading();
+                    samples.push({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy
                     });
-
-                    lat = position.coords.latitude.toFixed(6);
-                    lng = position.coords.longitude.toFixed(6);
+                    
+                    if (i < sampleCount - 1) {
+                        await new Promise(r => setTimeout(r, delayMs));
+                    }
                 }
-
+                
+                // Use the last sample as the final position
+                const finalSample = samples[samples.length - 1];
+                const lat = finalSample.lat.toFixed(6);
+                const lng = finalSample.lng.toFixed(6);
+                const accuracy = finalSample.accuracy;
+                
+                // Calculate variance across samples
+                const variance = calculateGpsVariance(samples);
+                
                 state.userLat = parseFloat(lat);
                 state.userLng = parseFloat(lng);
+                state.userAccuracy = accuracy;
+                state.gpsVariance = variance;
 
                 if (window.Livewire) {
                     window.Livewire.find('{{ $_instance->getId() }}')
                         .set('currentLiveCoords', [state.userLat, state.userLng]);
+                    window.Livewire.find('{{ $_instance->getId() }}')
+                        .set('gpsAccuracy', accuracy);
+                    window.Livewire.find('{{ $_instance->getId() }}')
+                        .set('gpsVariance', variance);
                 }
 
                 updateLocationDisplay(lat, lng);
@@ -385,7 +610,7 @@
 
         // Initialize Scanner
         function initScanner() {
-            if (state.isAbsence || state.isComplete) return;
+            if (state.isAbsence || state.isComplete || state.approvedAbsence) return;
 
             const scannerEl = document.getElementById('scanner');
             if (!scannerEl || typeof Html5Qrcode === 'undefined') return;
@@ -443,6 +668,8 @@
             window.setShowOverlay = setShowOverlay;
 
             async function startScanning() {
+                if (state.approvedAbsence) return;
+
                 try {
                     // Update mirroring class based on facing mode
                     const scannerEl = document.getElementById('scanner');
@@ -725,6 +952,21 @@
                     return;
                 }
 
+                // Face Verification Check for Check In
+                if (state.requiresFaceVerification) {
+                    // Dispatch event to open face verification modal
+                    window.dispatchEvent(new CustomEvent('face-verify', {
+                        detail: {
+                            callback: async () => {
+                                const result = await window.Livewire.find('{{ $_instance->getId() }}').call('scan',
+                                    code, null, null, photo);
+                                handleScanResult(result, scanner, startScanning);
+                            }
+                        }
+                    }));
+                    return;
+                }
+
                 const result = await window.Livewire.find('{{ $_instance->getId() }}').call('scan',
                     code, null, null, photo);
                 handleScanResult(result, scanner, startScanning);
@@ -979,6 +1221,8 @@
         }
 
         (async () => {
+            if (state.approvedAbsence) return;
+
             const allowed = await ensureLocationPermission();
 
             if (allowed) {

@@ -33,6 +33,11 @@ class Settings extends Component
 
             $setting->update(['value' => $value]);
             Cache::forget("setting.{$setting->key}");
+
+            // Vital: Clear Enterprise License Cache if Company Name or Key changes
+            if (in_array($setting->key, ['app.company_name', 'enterprise_license_key'])) {
+                Cache::forget('enterprise_license_valid');
+            }
             
             $this->dispatch('saved'); // For sweetalert or notification
         }
@@ -41,6 +46,7 @@ class Settings extends Component
     public function render()
     {
         $groups = Setting::all()->groupBy('group');
-        return view('livewire.admin.settings', ['groups' => $groups]);
+        $licenseInfo = \App\Services\Enterprise\LicenseGuard::getLicenseInfo();
+        return view('livewire.admin.settings', ['groups' => $groups, 'licenseInfo' => $licenseInfo]);
     }
 }

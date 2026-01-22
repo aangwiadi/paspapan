@@ -32,8 +32,14 @@ class Attendance extends Model
         'shift_id',
         'latitude_in',
         'longitude_in',
+        'accuracy_in',
+        'gps_variance_in',
         'latitude_out',
         'longitude_out',
+        'accuracy_out',
+        'gps_variance_out',
+        'is_suspicious',
+        'suspicious_reason',
         'status',
         'note',
         'attachment',
@@ -158,27 +164,9 @@ class Attendance extends Model
                 return null;
             }
 
-            // Try to decode JSON
-            $decoded = json_decode($this->attachment, true);
-            
-            // If valid JSON array (new format)
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $urls = [];
-                foreach ($decoded as $key => $path) {
-                    if (str_contains($path, 'https://') || str_contains($path, 'http://')) {
-                        $urls[$key] = $path;
-                    } else {
-                        $urls[$key] = Storage::disk(config('jetstream.attachment_disk'))->url($path);
-                    }
-                }
-                return $urls;
-            }
-
-            // Legacy string format
-            if (str_contains($this->attachment, 'https://') || str_contains($this->attachment, 'http://')) {
-                return $this->attachment;
-            }
-            return Storage::disk(config('jetstream.attachment_disk'))->url($this->attachment);
+            // Open Core: Delegate to Service
+            $service = app(\App\Contracts\AttendanceServiceInterface::class);
+            return $service->getAttachmentUrl($this);
         });
     }
 

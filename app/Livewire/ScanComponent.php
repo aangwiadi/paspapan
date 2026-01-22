@@ -26,6 +26,15 @@ class ScanComponent extends Component
     public $photo = null;
     public $timeSettings = [];
 
+    // Face Recognition
+    public ?array $userFaceDescriptor = null;
+    public ?Attendance $approvedAbsence = null;
+    public bool $requiresFaceVerification = false;
+
+    // GPS Accuracy for Fake GPS Detection
+    public ?float $gpsAccuracy = null;
+    public ?float $gpsVariance = null;
+
     public function validateBarcode(string $barcode, ?float $lat = null, ?float $lng = null)
     {
         // Update coordinates if provided
@@ -45,7 +54,7 @@ class ScanComponent extends Component
             ->first();
 
         if ($attendanceForDay && 
-            in_array($attendanceForDay->status, ['sick', 'excused']) && 
+            in_array($attendanceForDay->status, ['sick', 'excused', 'permission', 'leave']) && 
             $attendanceForDay->approval_status === Attendance::STATUS_APPROVED 
         ) {
             return __('Anda tidak dapat melakukan absensi karena sedang Cuti/Izin/Sakit.');
@@ -91,7 +100,7 @@ class ScanComponent extends Component
             ->first();
 
         if ($attendanceForDay && 
-            in_array($attendanceForDay->status, ['sick', 'excused']) && 
+            in_array($attendanceForDay->status, ['sick', 'excused', 'permission', 'leave']) && 
             $attendanceForDay->approval_status === Attendance::STATUS_APPROVED // Only block if explicitly Approved
         ) {
             return __('Anda tidak dapat melakukan absensi karena sedang Cuti/Izin/Sakit.');
@@ -153,8 +162,26 @@ class ScanComponent extends Component
                 'time_out' => date('H:i:s'),
                 'latitude_out' => doubleval($this->currentLiveCoords[0]),
                 'longitude_out' => doubleval($this->currentLiveCoords[1]),
+                'accuracy_out' => $this->gpsAccuracy,
+                'gps_variance_out' => $this->gpsVariance,
                 'attachment' => json_encode($attachments),
             ];
+
+            // Fake GPS Detection for Check Out
+            $isSuspicious = $attendance->is_suspicious ?? false;
+            $suspiciousReasons = $attendance->suspicious_reason ? explode('; ', $attendance->suspicious_reason) : [];
+            
+            if ($this->gpsAccuracy !== null && $this->gpsAccuracy < 5) {
+                $isSuspicious = true;
+                $suspiciousReasons[] = 'Checkout accuracy too perfect: ' . $this->gpsAccuracy . 'm';
+            }
+            if ($this->gpsVariance !== null && $this->gpsVariance == 0) {
+                $isSuspicious = true;
+                $suspiciousReasons[] = 'Checkout zero GPS variance';
+            }
+            
+            $updateData['is_suspicious'] = $isSuspicious;
+            $updateData['suspicious_reason'] = $isSuspicious ? implode('; ', array_unique($suspiciousReasons)) : null;
 
             // If note is provided (e.g. early checkout reasoning), save it
             if ($note) {
@@ -215,21 +242,30 @@ class ScanComponent extends Component
     {
         if (!$photoParam) return null;
         
-        $image = str_replace('data:image/jpeg;base64,', '', $photoParam);
-        $image = str_replace('data:image/png;base64,', '', $image);
-        $image = str_replace(' ', '+', $image);
         $imageName = Auth::user()->id . '_' . time() . '.jpg';
-        $path = 'attendance_photos/' . date('Y/m/d');
         
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->makeDirectory($path);
-        }
-        
-        \Illuminate\Support\Facades\Storage::disk('public')->put($path . '/' . $imageName, base64_decode($image));
-        return $path . '/' . $imageName;
+        // Open Core: Delegate Storage to Service (Secure vs Public)
+        $service = app(\App\Contracts\AttendanceServiceInterface::class);
+        return $service->storeAttendancePhoto($photoParam, $imageName);
     }
 
     private function saveAttendanceRequest($barcode, $date, $timeIn, $status, $attachmentPath, $shift) {
+        // Fake GPS Detection
+        $isSuspicious = false;
+        $suspiciousReasons = [];
+        
+        // Check 1: Accuracy too perfect (< 5 meters is suspicious for GPS)
+        if ($this->gpsAccuracy !== null && $this->gpsAccuracy < 5) {
+            $isSuspicious = true;
+            $suspiciousReasons[] = 'Accuracy too perfect: ' . $this->gpsAccuracy . 'm';
+        }
+        
+        // Check 2: Zero variance across samples (fake GPS is static)
+        if ($this->gpsVariance !== null && $this->gpsVariance == 0) {
+            $isSuspicious = true;
+            $suspiciousReasons[] = 'Zero GPS variance (static location)';
+        }
+
         // Check if there is an existing record to override (Rejected, Absent, or Pending Sick/Excused)
         $overrideable = Attendance::where('user_id', Auth::user()->id)
             ->where('date', $date)
@@ -247,6 +283,8 @@ class ScanComponent extends Component
                 'shift_id' => $shift->id,
                 'latitude_in' => doubleval($this->currentLiveCoords[0]),
                 'longitude_in' => doubleval($this->currentLiveCoords[1]),
+                'accuracy_in' => $this->gpsAccuracy,
+                'gps_variance_in' => $this->gpsVariance,
                 // Legacy fields
                 'latitude' => doubleval($this->currentLiveCoords[0]),
                 'longitude' => doubleval($this->currentLiveCoords[1]),
@@ -256,6 +294,8 @@ class ScanComponent extends Component
                 'attachment' => $attachmentPath ? json_encode(['in' => $attachmentPath]) : null,
                 'rejection_note' => null,
                 'approval_status' => Attendance::STATUS_APPROVED, // Auto-approve presence
+                'is_suspicious' => $isSuspicious,
+                'suspicious_reason' => $isSuspicious ? implode('; ', $suspiciousReasons) : null,
             ]);
             return $overrideable;
         }
@@ -268,9 +308,11 @@ class ScanComponent extends Component
             'time_out' => null,
             'shift_id' => $shift->id,
 
-            // New: Separate location for check in
+            // New: Separate location for check in with accuracy
             'latitude_in' => doubleval($this->currentLiveCoords[0]),
             'longitude_in' => doubleval($this->currentLiveCoords[1]),
+            'accuracy_in' => $this->gpsAccuracy,
+            'gps_variance_in' => $this->gpsVariance,
 
             // Legacy: Keep for backward compatibility (optional)
             'latitude' => doubleval($this->currentLiveCoords[0]),
@@ -279,6 +321,10 @@ class ScanComponent extends Component
             'status' => $status,
             'note' => null,
             'attachment' => $attachmentPath ? json_encode(['in' => $attachmentPath]) : null,
+            
+            // Fake GPS Detection
+            'is_suspicious' => $isSuspicious,
+            'suspicious_reason' => $isSuspicious ? implode('; ', $suspiciousReasons) : null,
         ]);
     }
 
@@ -356,6 +402,35 @@ class ScanComponent extends Component
             'format' => \App\Models\Setting::getValue('app.time_format', '24'),
             'show_seconds' => (bool) \App\Models\Setting::getValue('app.show_seconds', false),
         ];
+
+        // Load Face Recognition settings
+        $user = Auth::user();
+        
+        // Check if Face ID is mandatory (Open Core Logic)
+        $service = app(\App\Contracts\AttendanceServiceInterface::class);
+        $requirePhoto = $service->shouldEnforceFaceEnrollment();
+
+        if ($requirePhoto && !$user->hasFaceRegistered()) {
+            return redirect()->route('face.enrollment');
+        }
+
+        if ($user->hasFaceRegistered()) {
+            $this->userFaceDescriptor = $user->faceDescriptor->descriptor;
+            $this->requiresFaceVerification = (bool) \App\Models\Setting::getValue('attendance.require_face_verification', true);
+        }
+
+        // Check for approved absence logic
+        $today = date('Y-m-d');
+        $attendance = Attendance::where('user_id', Auth::user()->id)
+            ->where('date', $today)
+            ->first();
+
+        if ($attendance && 
+            in_array($attendance->status, ['sick', 'excused', 'permission', 'leave']) &&
+            $attendance->approval_status === Attendance::STATUS_APPROVED
+        ) {
+            $this->approvedAbsence = $attendance;
+        }
     }
 
     public function render()

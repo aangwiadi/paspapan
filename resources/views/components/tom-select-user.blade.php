@@ -34,8 +34,8 @@
     }
 
     .ts-wrapper-user.focus .ts-control {
-        border-color: #6366f1; /* primary-500 */
-        box-shadow: 0 0 0 1px #6366f1;
+        border-color: #6ab45b; /* primary-500 */
+        box-shadow: 0 0 0 1px #6ab45b;
     }
 
     /* Dropdown */
@@ -70,7 +70,8 @@
     }
 
     .dark .ts-wrapper-user.focus .ts-control {
-        border-color: #6366f1 !important;
+        border-color: #6ab45b !important; /* primary-500 */
+        box-shadow: 0 0 0 1px #6ab45b !important;
     }
 
     .dark .ts-wrapper-user .ts-dropdown {
@@ -108,7 +109,7 @@
         @if(isset($__livewire) && $attributes->wire('model')->value()) @entangle($attributes->wire('model')) @else @js($selected) @endif,
         {{ $disabled ? 'true' : 'false' }}
      )"
-     class="w-full ts-wrapper-user">
+     class="w-full ts-wrapper-user relative">
     
     <select x-ref="select" {{ $attributes->except(['options', 'placeholder']) }} placeholder="{{ $placeholder }}">
         {{ $slot }}

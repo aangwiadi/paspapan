@@ -27,6 +27,8 @@ class UserForm extends Form
     public $education_id = null;
     public $job_title_id = null;
     public $photo = null;
+    public $basic_salary = 0;
+    public $hourly_rate = 0;
 
     public function rules()
     {
@@ -36,7 +38,6 @@ class UserForm extends Form
                 'required',
                 'string',
                 'max:255',
-                // Rule::unique('users')->ignore($this->user) // Name is no longer unique
             ],
             'nip' => [$requiredOrNullable, 'string', 'max:255'],
             'email' => [
@@ -57,6 +58,8 @@ class UserForm extends Form
             'education_id' => ['nullable', 'exists:educations,id'],
             'job_title_id' => ['nullable', 'exists:job_titles,id'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'basic_salary' => ['nullable', 'numeric', 'min:0'],
+            'hourly_rate' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
@@ -81,6 +84,8 @@ class UserForm extends Form
         $this->division_id = $user->division_id;
         $this->education_id = $user->education_id;
         $this->job_title_id = $user->job_title_id;
+        $this->basic_salary = $user->basic_salary;
+        $this->hourly_rate = $user->hourly_rate;
         return $this;
     }
 

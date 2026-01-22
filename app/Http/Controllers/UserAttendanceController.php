@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class UserAttendanceController extends Controller
 {
@@ -108,10 +109,9 @@ class UserAttendanceController extends Controller
             // Save new attachment file
             $newAttachment = null;
             if ($request->file('attachment')) {
-                $newAttachment = $request->file('attachment')->storePublicly(
-                    'attachments',
-                    ['disk' => config('jetstream.attachment_disk', 'public')]
-                );
+                // Use Service (Enterprise/Community logic handled by Provider)
+                $service = app(\App\Contracts\AttendanceServiceInterface::class);
+                $newAttachment = $service->storeAttachment($request->file('attachment'));
             }
 
             $fromDate->range($toDate)
@@ -186,6 +186,30 @@ class UserAttendanceController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
         }
+    }
+
+    public function downloadAttachment(Attendance $attendance)
+    {
+        // Authorization: User owns it OR User is Admin
+        if ($attendance->user_id !== Auth::id() && !Auth::user()->isAdmin) {
+            abort(403);
+        }
+
+        if (!$attendance->attachment) {
+            abort(404);
+        }
+
+        // If stored in public disk (legacy), redirect
+        if (Storage::disk('public')->exists($attendance->attachment)) {
+            return redirect(Storage::disk('public')->url($attendance->attachment));
+        }
+        
+        // Serve from local disk
+        if (Storage::disk('local')->exists($attendance->attachment)) {
+            return Storage::disk('local')->download($attendance->attachment);
+        }
+
+        abort(404, 'File not found');
     }
 
     public function history()

@@ -12,6 +12,9 @@ class HomeAttendanceStatus extends Component
     public $hasCheckedOut = false;
     public $attendance = null;
 
+    public $approvedAbsence = null;
+    public $requiresFaceEnrollment = false;
+
     public function mount()
     {
         $this->checkAttendanceStatus();
@@ -21,6 +24,14 @@ class HomeAttendanceStatus extends Component
     {
         $user = Auth::user();
         $today = now()->format('Y-m-d');
+
+        // Check for mandatory face enrollment (Open Core Logic)
+        $service = app(\App\Contracts\AttendanceServiceInterface::class);
+        $requirePhoto = $service->shouldEnforceFaceEnrollment();
+        
+        if ($requirePhoto && !$user->hasFaceRegistered()) {
+            $this->requiresFaceEnrollment = true;
+        }
         
         $this->attendance = Attendance::with(['shift', 'barcode'])
             ->where('user_id', $user->id)
@@ -30,6 +41,13 @@ class HomeAttendanceStatus extends Component
         if ($this->attendance) {
             $this->hasCheckedIn = !is_null($this->attendance->time_in);
             $this->hasCheckedOut = !is_null($this->attendance->time_out);
+
+            // Check for approved absence
+            if (in_array($this->attendance->status, ['sick', 'excused', 'permission', 'leave']) &&
+                $this->attendance->approval_status === Attendance::STATUS_APPROVED
+            ) {
+                $this->approvedAbsence = $this->attendance;
+            }
         }
     }
 

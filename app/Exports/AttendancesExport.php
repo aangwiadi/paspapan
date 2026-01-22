@@ -15,7 +15,9 @@ class AttendancesExport implements FromView
         private $year = null,
         private $division = null,
         private $jobTitle = null,
-        private $education = null
+        private $education = null,
+        private $startDate = null,
+        private $endDate = null
     ) {
     }
 
@@ -30,7 +32,9 @@ class AttendancesExport implements FromView
             division: $this->division,
             jobTitle: $this->jobTitle,
             education: $this->education
-        )->get();
+        )->when($this->startDate && $this->endDate, function ($query) {
+            $query->whereBetween('date', [$this->startDate, $this->endDate]);
+        })->get();
 
         return view('admin.import-export.export-attendances', ['attendances' => $attendances]);
     }

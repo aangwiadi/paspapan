@@ -43,7 +43,17 @@
         </td>
         <td>{{ __($attendance->status) }}</td>
         <td>{{ $attendance->note }}</td>
-        <td>{{ $attendance->attachment_url ? (str_starts_with($attendance->attachment_url, 'http') ? $attendance->attachment_url : url($attendance->attachment_url)) : '-' }}</td>
+        <td>
+            @if(is_array($attendance->attachment_url))
+                @foreach($attendance->attachment_url as $url)
+                    <a href="{{ $url }}" target="_blank">Link {{ $loop->iteration }}</a><br>
+                @endforeach
+            @elseif($attendance->attachment_url)
+                {{ str_starts_with($attendance->attachment_url, 'http') ? $attendance->attachment_url : url($attendance->attachment_url) }}
+            @else
+                - 
+            @endif
+        </td>
         <td>{{ $attendance->created_at }}</td>
         <td>{{ $attendance->updated_at }}</td>
 
