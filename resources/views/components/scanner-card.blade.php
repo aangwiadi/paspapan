@@ -3,7 +3,7 @@
     {{-- Decorative Background Blob --}}
     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-50 dark:bg-primary-900/20 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-    <div class="flex flex-col gap-4 mb-3 relative z-[60]">
+    <div class="scanner-header flex flex-col gap-4 mb-3 relative z-[60]">
         <div class="flex justify-between items-center">
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <div class="p-1.5 bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400 rounded-lg">
@@ -60,7 +60,7 @@
     </div>
 
     @if(isset($slot) && $slot->isNotEmpty())
-        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div class="scanner-footer mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
             {{ $slot }}
         </div>
     @endif

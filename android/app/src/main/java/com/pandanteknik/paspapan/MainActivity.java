@@ -16,6 +16,12 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Force Transparent Background for Scanner
+        getBridge().getWebView().setBackgroundColor(android.graphics.Color.TRANSPARENT);
+
+        // Clear Cache to prevent stale CSS/JS
+        getBridge().getWebView().clearCache(true);
+
         registerPlugins(new ArrayList<Class<? extends Plugin>>() {
             {
                 add(BarcodeScanner.class);

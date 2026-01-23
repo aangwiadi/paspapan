@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Attendance;
+use App\Models\Overtime;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -14,6 +15,7 @@ class HomeAttendanceStatus extends Component
 
     public $approvedAbsence = null;
     public $requiresFaceEnrollment = false;
+    public $overtime = null;
 
     public function mount()
     {
@@ -49,6 +51,11 @@ class HomeAttendanceStatus extends Component
                 $this->approvedAbsence = $this->attendance;
             }
         }
+
+        // Check for Overtime Request
+        $this->overtime = Overtime::where('user_id', $user->id)
+            ->where('date', $today)
+            ->first();
     }
 
     public function render()

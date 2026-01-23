@@ -57,8 +57,8 @@ class Attendance extends Model
     {
         return [
             'date' => 'datetime:Y-m-d',
-            'time_in' => 'datetime:H:i:s',
-            'time_out' => 'datetime:H:i:s',
+            'time_in' => 'datetime',
+            'time_out' => 'datetime',
             'latitude_in' => 'float',
             'longitude_in' => 'float',
             'latitude_out' => 'float',

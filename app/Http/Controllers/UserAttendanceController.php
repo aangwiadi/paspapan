@@ -154,26 +154,32 @@ class UserAttendanceController extends Controller
 
             \App\Models\ActivityLog::record('Leave Request', "User submitted {$request->status} request from {$fromDate->format('Y-m-d')} to {$toDate->format('Y-m-d')}");
 
-            // Notify Supervisor (or fallback to Admins)
+            // Notify Supervisor AND Admins (Broad Visibility)
             $supervisor = Auth::user()->supervisor;
-            $notifiable = $supervisor ? collect([$supervisor]) : \App\Models\User::whereIn('group', ['admin', 'superadmin'])->get();
+            $admins = \App\Models\User::whereIn('group', ['admin', 'superadmin'])->get();
+            
+            $notifiable = $admins;
+            if ($supervisor) {
+                $notifiable = $notifiable->push($supervisor)->unique('id');
+            }
             
             $latestAttendance = $attendance ?? \App\Models\Attendance::where('user_id', Auth::id())->latest()->first();
             
             if (class_exists(\Illuminate\Support\Facades\Notification::class) && $latestAttendance && $notifiable->count() > 0) {
                 // Pass date range to notification for summary
-                $notification = new \App\Notifications\LeaveRequested($latestAttendance, $fromDate, $toDate);
+                // 1. Bell Notification (Sync)
+                \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\LeaveRequested($latestAttendance, $fromDate, $toDate));
+
+                // 2. Email Notification (Queued) - Send to Supervisor/Admins
+                \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\LeaveRequestedEmail($latestAttendance, $fromDate, $toDate));
                 
-                \Illuminate\Support\Facades\Notification::send($notifiable, $notification); // Send to Supervisor/Admins
-                
-                // Also send email to configured admin email
+                // 3. Global Admin Email (Queued)
                 $adminEmail = \App\Models\Setting::getValue('notif.admin_email');
                 if (!empty($adminEmail) && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
                     try {
                         \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
-                            ->notify(new \App\Notifications\LeaveRequested($latestAttendance, $fromDate, $toDate));
+                            ->notify(new \App\Notifications\LeaveRequestedEmail($latestAttendance, $fromDate, $toDate));
                     } catch (\Throwable $e) {
-                        // Log but don't fail if email fails
                         \Illuminate\Support\Facades\Log::warning('Failed to send admin email notification: ' . $e->getMessage());
                     }
                 }

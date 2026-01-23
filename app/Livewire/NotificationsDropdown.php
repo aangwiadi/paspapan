@@ -8,6 +8,11 @@ use Livewire\Component;
 
 class NotificationsDropdown extends Component
 {
+    protected $listeners = [
+        'refresh-notifications' => '$refresh',
+        'announcement-dismissed' => '$refresh'
+    ];
+
     public function dismiss($announcementId)
     {
         $user = Auth::user();

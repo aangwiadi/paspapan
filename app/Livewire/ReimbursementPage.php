@@ -12,6 +12,7 @@ class ReimbursementPage extends Component
     use WithFileUploads;
 
     public $claims;
+    public $limit = 5;
     public $isCreating = false;
 
     // Form Fields
@@ -23,7 +24,7 @@ class ReimbursementPage extends Component
 
     protected $rules = [
         'date' => 'required|date',
-        'type' => 'required|string|in:medical,transport,optical,dental,other',
+        'type' => 'required|string|in:medical,transport,optical,dental,project,other',
         'amount' => 'required|numeric|min:1',
         'description' => 'required|string|max:500',
         'attachment' => 'nullable|file|max:10240', // 10MB max
@@ -50,6 +51,12 @@ class ReimbursementPage extends Component
 
     public function save()
     {
+        // Sanitize Amount (Remove dots/commas from masking)
+        // Example: "1.250.000" -> "1250000"
+        if ($this->amount) {
+            $this->amount = str_replace(['.', ','], '', (string) $this->amount);
+        }
+
         $this->validate();
 
         $path = null;
@@ -67,24 +74,36 @@ class ReimbursementPage extends Component
             'status' => 'pending',
         ]);
 
-        // Notify Supervisor (or fallback to Admins)
+        // Notify Supervisor AND Admins (Broad Visibility)
         $newReimbursement = Reimbursement::where('user_id', Auth::id())->latest()->first();
         if ($newReimbursement) {
             $supervisor = Auth::user()->supervisor;
-            $notifiable = $supervisor ? collect([$supervisor]) : \App\Models\User::whereIn('group', ['admin', 'superadmin'])->get();
+            $admins = \App\Models\User::whereIn('group', ['admin', 'superadmin'])->get();
+            
+            $notifiable = $admins;
+            if ($supervisor) {
+                $notifiable = $notifiable->push($supervisor)->unique('id');
+            }
 
             if ($notifiable->count() > 0) {
+                 // Bell (Sync)
                  \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\ReimbursementRequested($newReimbursement));
                  
-                 // Also try direct route for admin email setting
-                 $adminEmail = \App\Models\Setting::getValue('notif.admin_email');
-                 if (!empty($adminEmail) && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
-                     try {
-                         \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
-                             ->notify(new \App\Notifications\ReimbursementRequested($newReimbursement));
-                     } catch (\Throwable $e) {
-                         // Log ignored
-                     }
+                 // Email (Queued)
+                 \Illuminate\Support\Facades\Notification::send($notifiable, new \App\Notifications\ReimbursementRequestedEmail($newReimbursement));
+                 
+                 // Force UI Refresh
+                 $this->dispatch('refresh-notifications');
+            }
+
+            // Global Admin Email (Queued)
+            $adminEmail = \App\Models\Setting::getValue('notif.admin_email');
+            if (!empty($adminEmail) && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+                 try {
+                     \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
+                         ->notify(new \App\Notifications\ReimbursementRequestedEmail($newReimbursement));
+                 } catch (\Throwable $e) {
+                     // Log ignored
                  }
             }
         }
@@ -93,12 +112,19 @@ class ReimbursementPage extends Component
         $this->dispatch('success', 'Reimbursement claim submitted successfully.');
     }
 
+    public function loadMore()
+    {
+        $this->limit += 10;
+    }
+
     public function render()
     {
-        $this->claims = Reimbursement::where('user_id', Auth::id())
-            ->latest('date')
-            ->get();
+        $query = Reimbursement::where('user_id', Auth::id())->latest('date');
+        $totalClaims = $query->count();
+        $this->claims = $query->take($this->limit)->get();
 
-        return view('livewire.reimbursement-page')->layout('layouts.app');
+        return view('livewire.reimbursement-page', [
+            'totalClaims' => $totalClaims
+        ])->layout('layouts.app');
     }
 }

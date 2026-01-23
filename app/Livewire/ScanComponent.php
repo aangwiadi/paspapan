@@ -159,7 +159,7 @@ class ScanComponent extends Component
             }
 
             $updateData = [
-                'time_out' => date('H:i:s'),
+                'time_out' => Carbon::now(),
                 'latitude_out' => doubleval($this->currentLiveCoords[0]),
                 'longitude_out' => doubleval($this->currentLiveCoords[1]),
                 'accuracy_out' => $this->gpsAccuracy,
@@ -218,7 +218,7 @@ class ScanComponent extends Component
     {
         $now = Carbon::now();
         $date = $now->format('Y-m-d');
-        $timeIn = $now->format('H:i:s');
+        $timeIn = $now;
 
         /** @var Shift */
         /** @var Shift */

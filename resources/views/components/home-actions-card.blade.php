@@ -1,4 +1,4 @@
-@props(['hasCheckedIn', 'hasCheckedOut', 'attendance'])
+@props(['hasCheckedIn', 'hasCheckedOut', 'attendance', 'overtime' => null])
 
 <div class="bg-white dark:bg-gray-800 rounded-[1.5rem] p-5 shadow-lg border border-gray-100 dark:border-gray-700 relative overflow-hidden">
     
@@ -82,15 +82,16 @@
                 : null;
         @endphp
 
-        <div x-data="shiftCountdown('{{ $shiftEndTime }}')" class="mb-3">
+        <div x-data="shiftCountdown('{{ $shiftEndTime }}', '{{ $overtime?->status }}')" class="mb-3">
             <template x-if="endTime && remaining > 0">
                 <p class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
                     {{ __('Shift ends in') }}: <span class="font-mono text-primary-600 dark:text-primary-400 font-bold" x-text="formatted"></span>
                 </p>
             </template>
             <template x-if="endTime && remaining <= 0">
-                 <p class="text-center text-[11px] font-medium text-amber-500 dark:text-amber-400 animate-pulse">
-                    {{ __('Overtime') }}
+                 <p class="text-center text-[11px] font-medium animate-pulse" 
+                    :class="status === 'rejected' ? 'text-red-500 dark:text-red-400' : 'text-amber-500 dark:text-amber-400'">
+                    <span x-text="status === 'rejected' ? '{{ __('Shift Ended') }}' : '{{ __('Overtime') }}'"></span>
                 </p>
             </template>
             <template x-if="!endTime">
@@ -103,11 +104,12 @@
 @pushOnce('scripts')
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('shiftCountdown', (initialEndTime) => ({
+        Alpine.data('shiftCountdown', (initialEndTime, overtimeStatus) => ({
             endTime: null,
             now: new Date().getTime(),
             remaining: 0,
             timer: null,
+            status: overtimeStatus,
             
             init() {
                 if (initialEndTime) {
@@ -135,7 +137,12 @@
 
             get formatted() {
                 if (!this.endTime) return '--:--:--';
-                if (this.remaining < 0) return '{{ __('Overtime') }}';
+                if (this.remaining < 0) {
+                    if (this.status === 'rejected') {
+                         return '{{ __('Shift Ended') }}';
+                    }
+                    return '{{ __('Overtime') }}';
+                }
                 
                 let diff = this.remaining;
                 let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

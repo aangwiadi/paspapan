@@ -24,8 +24,9 @@ export async function startNativeBarcodeScanner(onScanSuccess, facingMode = null
     }
 
     document.body.classList.add('is-native-scanning');
+    document.documentElement.classList.add('is-native-scanning');
     
-    BarcodeScanner.hideBackground();
+    await BarcodeScanner.hideBackground();
     
     if (window.setShowOverlay) window.setShowOverlay(true);
 
@@ -40,11 +41,13 @@ export async function startNativeBarcodeScanner(onScanSuccess, facingMode = null
         }
     } catch (e) {
         console.error("Scanner failed", e);
+        alert("Scanner Error: " + (e.message || e));
     } finally {
         if (window.setShowOverlay) window.setShowOverlay(false);
         
         BarcodeScanner.showBackground();
         document.body.classList.remove('is-native-scanning');
+        document.documentElement.classList.remove('is-native-scanning');
         
         try { await BarcodeScanner.stopScan(); } catch(e){}
         isScanning = false;
@@ -54,6 +57,7 @@ export async function startNativeBarcodeScanner(onScanSuccess, facingMode = null
 export async function stopNativeBarcodeScanner() {
     BarcodeScanner.showBackground();
     document.body.classList.remove('is-native-scanning');
+    document.documentElement.classList.remove('is-native-scanning');
     try { await BarcodeScanner.stopScan(); } catch(e){}
     isScanning = false;
 }

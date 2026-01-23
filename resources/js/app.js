@@ -149,10 +149,12 @@ window.setMapLocation = ({ location }) => {
 };
 
 import { startNativeBarcodeScanner, stopNativeBarcodeScanner, switchNativeCamera } from './services/native/barcode';
+import { checkMockLocation } from './services/native/mock-location';
 
 window.startNativeBarcodeScanner = startNativeBarcodeScanner;
 window.stopNativeBarcodeScanner = stopNativeBarcodeScanner;
 window.switchNativeCamera = switchNativeCamera;
+window.checkMockLocation = checkMockLocation;
 
 window.isNativeApp = () =>
     !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -304,47 +306,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("touchend", swipeEnd, { passive: true });
 });
 
-/*
-(function () {
-    if (!window.Capacitor?.isNativePlatform?.()) return;
+document.addEventListener('pagehide', () => {
+    if (window.stopNativeBarcodeScanner) {
+        window.stopNativeBarcodeScanner();
+    }
+});
 
-    const EDGE_WIDTH = 24;
-    const MIN_SWIPE_X = 120;
-    const MAX_SWIPE_Y = 80;
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && window.stopNativeBarcodeScanner) {
+        window.stopNativeBarcodeScanner();
+    }
+});
 
-    let startX = 0;
-    let startY = 0;
-    let isEdgeSwipe = false;
+// Livewire Navigation (SPA-style links)
+document.addEventListener('livewire:navigating', () => {
+    if (window.stopNativeBarcodeScanner) {
+        window.stopNativeBarcodeScanner();
+    }
+});
 
-    document.addEventListener(
-        "touchstart",
-        (e) => {
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
-            isEdgeSwipe = startX <= EDGE_WIDTH;
-        },
-        { passive: true }
-    );
+// Capacitor Back Button
+if (window.Capacitor?.Plugins?.App) {
+    window.Capacitor.Plugins.App.addListener('backButton', () => {
+        if (window.stopNativeBarcodeScanner) {
+            window.stopNativeBarcodeScanner();
+        }
+    });
+}
 
-    document.addEventListener(
-        "touchend",
-        (e) => {
-            if (!isEdgeSwipe) return;
-
-            const touch = e.changedTouches[0];
-            const diffX = touch.clientX - startX;
-            const diffY = Math.abs(touch.clientY - startY);
-
-            if (diffX > MIN_SWIPE_X && diffY < MAX_SWIPE_Y) {
-                if (window.history.length > 1) {
-                    window.history.back();
-                }
-            }
-
-            isEdgeSwipe = false;
-        },
-        { passive: true }
-    );
-})();
-*/

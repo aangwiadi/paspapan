@@ -208,6 +208,54 @@ cd android
 
 ---
 
+## 🚀 Shared Hosting Deployment
+
+Deploying PasPapan on cPanel or similar shared hosting environments? Follow these steps:
+
+### 1. Upload & Extract
+*   Compress your local project (excluding `node_modules` and `vendor` if possible, but simpler to include `vendor` if you don't have SSH access).
+*   Upload to your `public_html` or subdomain folder.
+*   Extract the files.
+
+### 2. File & Folder Permissions
+*   Ensure `storage` and `bootstrap/cache` folders are writable (775 or 777).
+*   Symlinks: If `php artisan storage:link` cannot be run, you may need to manually create a symlink or cron job to link `public/storage` to `storage/app/public`.
+
+### 3. Database Setup
+*   Create a MySQL database and user in your hosting panel.
+*   Edit `.env` (or rename `.env.example` -> `.env`):
+    ```env
+    APP_URL=https://your-domain.com
+    DB_DATABASE=your_db_name
+    DB_USERNAME=your_db_user
+    DB_PASSWORD=your_db_pass
+    QUEUE_CONNECTION=database
+    ```
+*   Import the database structure (SQL file) or run migrations if SSH is available.
+
+### 4. ⚠️ IMPORTANT: Running Queue Workers (Notifications)
+Since this application uses **Queued Notifications** (for performance), emails and alerts **WILL NOT SEND** unless a worker is running.
+
+**On Shared Hosting (cPanel), set up a Cron Job:**
+
+1.  Go to **cPanel > Cron Jobs**.
+2.  Add a **"Once Per Minute"** (`* * * * *`) job.
+3.  Command:
+    ```bash
+    /usr/local/bin/php /home/username/public_html/artisan queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
+    ```
+    *(Replace `/usr/local/bin/php` with your hosting's PHP path and `/home/username/public_html` with your project path).*
+
+**Why this command?**
+*   `queue:work --stop-when-empty`: This processes all currently waiting jobs and then quits. This prevents "Process Time Limit" kills common on shared hosting, as it starts fresh every minute.
+
+### 5. Task Scheduler (Optional but Recommended)
+For automated tasks (like monthly payroll generation or auto-checkout), add another Cron Job:
+*   Command:
+    ```bash
+    /usr/local/bin/php /home/username/public_html/artisan schedule:run >> /dev/null 2>&1
+    ```
+
 ## ❓ Troubleshooting
 
 **Q: GPS not working / Camera blocked?**

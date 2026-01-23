@@ -67,6 +67,7 @@
             :hasCheckedIn="$hasCheckedIn" 
             :hasCheckedOut="$hasCheckedOut" 
             :attendance="$attendance" 
+            :overtime="$overtime"
         />
     @endif
 </div>

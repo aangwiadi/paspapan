@@ -54,12 +54,54 @@
                         @csrf
 
                         <div>
-                            <x-label for="status" value="{{ __('Leave Type') }}" class="mb-2 font-bold text-gray-700 dark:text-gray-300" />
-                            <x-tom-select-user name="status" id="status" placeholder="{{ __('Select Leave Type') }}" selected="{{ old('status') }}" required>
-                                <option value="" disabled selected>{{ __('Select Leave Type') }}</option>
-                                <option value="excused">{{ __('Excused (Annual Leave)') }}</option>
-                                <option value="sick">{{ __('Sick (Requires Certificate)') }}</option>
-                            </x-tom-select-user>
+                            <label class="mb-3 block font-bold text-gray-700 dark:text-gray-300">{{ __('Leave Type') }}</label>
+                            
+                            {{-- compact grid: side-by-side on mobile --}}
+                            <div class="grid grid-cols-2 gap-3">
+                                {{-- Option 1: Excused / Cuti --}}
+                                <label class="relative cursor-pointer group">
+                                    <input type="radio" name="status" value="excused" class="peer sr-only" {{ old('status') == 'excused' ? 'checked' : '' }} required>
+                                    
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-200 dark:hover:border-primary-800 transition-all duration-200 peer-checked:border-primary-500 dark:peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 h-full flex items-center">
+                                        <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-3 w-full">
+                                            <div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-tight">{{ __('Excused / Annual Leave') }}</h3>
+                                                <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{{ __('Annual Leave or Personal') }}</p>
+                                            </div>
+                                            
+                                            {{-- Checkmark --}}
+                                            <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity text-primary-600 dark:text-primary-400 transform scale-50 peer-checked:scale-100 duration-200">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                {{-- Option 2: Sick / Sakit --}}
+                                <label class="relative cursor-pointer group">
+                                    <input type="radio" name="status" value="sick" class="peer sr-only" {{ old('status') == 'sick' ? 'checked' : '' }} required>
+                                    
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-rose-200 dark:hover:border-rose-800 transition-all duration-200 peer-checked:border-rose-500 dark:peer-checked:border-rose-500 peer-checked:bg-rose-50 dark:peer-checked:bg-rose-900/20 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-rose-500 h-full flex items-center">
+                                        <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-3 w-full">
+                                            <div class="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-tight">{{ __('Sick Leave') }}</h3>
+                                                <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{{ __('Requires Medical Certificate') }}</p>
+                                            </div>
+                                            
+                                            {{-- Checkmark --}}
+                                            <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity text-rose-600 dark:text-rose-400 transform scale-50 peer-checked:scale-100 duration-200">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                             <x-input-error for="status" class="mt-2" />
                         </div>
 

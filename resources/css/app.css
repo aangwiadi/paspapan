@@ -7,54 +7,72 @@
         @apply bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700;
     }
 
+    /* Prevent elastic scrolling (pull-down effect) on native */
+    html, body {
+        overscroll-behavior-y: none;
+    }
+
     /* =========================================
-       NATIVE SCANNER TRANSPARENCY (Hole Punch)
+       NATIVE SCANNER TRANSPARENCY
+       
+       HOW IT WORKS:
+       1. Camera renders BEHIND the WebView (native layer)
+       2. We make all page backgrounds TRANSPARENT so camera shows through
+       3. The #scanner element uses massive box-shadow to create an 
+          OPAQUE "mask" everywhere EXCEPT the scanner hole
+       4. The hole itself has no background, allowing camera to show
        ========================================= */
        
+    html.is-native-scanning,
     body.is-native-scanning {
         background-color: transparent !important;
     }
 
-    /* 1. Global Transparency */
+    /* 1. Global Transparency - ALL page layers must be transparent */
     body.is-native-scanning #scan-wrapper, 
     body.is-native-scanning .min-h-screen,
     body.is-native-scanning main, 
-    body.is-native-scanning #app {
+    body.is-native-scanning #app,
+    body.is-native-scanning #scanner-card {
         background-color: transparent !important;
         background-image: none !important;
     }
 
-    /* 2. THE CARD (Container) */
-    /* This must be transparent to let the camera through, BUT we need to ensure it blocks the camera 
-       for the header/footer parts. We DO NOT use box-shadow here to avoid layout shifts. */
-    body.is-native-scanning #scanner-card {
-        background-color: transparent !important;
-        border-color: transparent !important;
-        /* No overflow hidden here, or we clip the large shadow from the child */
-        overflow: visible !important; 
-        box-shadow: none !important;
+    /* 2. Hide Decorative Elements */
+    body.is-native-scanning .blur-3xl {
+        display: none !important;
     }
     
-    /* 3. THE HOLE (The actual window) */
+    /* 3. Force Hide Placeholder (Icon) */
+    body.is-native-scanning #scanner-placeholder {
+        display: none !important;
+    }
+
+    /* 4. THE SCANNER HOLE - Creates visible mask with transparent center */
     body.is-native-scanning #scanner {
         background-color: transparent !important;
-        border-color: transparent !important;
         position: relative;
-        z-index: 0;
-        /* This GIANT shadow covers the entire screen EXCEPT the hole */
-        box-shadow: 0 0 0 9999px #fff !important; 
+        z-index: 10;
+        border-radius: 1rem !important;
+        /* CRITICAL: This massive box-shadow creates the OPAQUE mask around the hole */
+        /* Light mode: white mask - FULLY OPAQUE */
+        box-shadow: 0 0 0 9999px #ffffff !important;
+        outline: none !important;
+        border: 2px solid rgba(59, 130, 246, 0.5) !important;
     }
 
     .dark body.is-native-scanning #scanner {
-        box-shadow: 0 0 0 9999px #1f2937 !important; /* dark: gray-800 */
+        /* Dark mode: dark gray mask - FULLY OPAQUE */
+        box-shadow: 0 0 0 9999px #1f2937 !important;
+        border: 2px solid rgba(59, 130, 246, 0.5) !important;
     }
 
-    /* 4. Hide Web Video (Only on Native) */
+    /* 5. Hide Web Video (Only on Native) */
     body.is-native-scanning #scanner video {
         display: none !important; 
     }
     
-    /* 5. Force Web Video Object Fit */
+    /* 6. Force Web Video Object Fit */
     #scanner video {
         width: 100% !important;
         height: 100% !important;
@@ -62,46 +80,95 @@
         border-radius: 1rem;
     }
 
-    /* 6. HEADER VISIBILITY FIX */
-    /* All card content (headers, buttons) MUST sit on top of the giant shadow */
-    body.is-native-scanning #scanner-card h3, 
-    body.is-native-scanning #scanner-card button,
-    body.is-native-scanning #scanner-card .header-actions,
-    body.is-native-scanning #scanner-placeholders, 
-    body.is-native-scanning #scanner-overlay,
-    body.is-native-scanning #scanner-result,
-    body.is-native-scanning #scanner-error {
+    /* 7. RESTORE HEADER/FOOTER VISIBILITY */
+    /* Access classes added in scanner-card.blade.php */
+    body.is-native-scanning .scanner-header,
+    body.is-native-scanning .scanner-footer {
+        background-color: #fff !important;
         position: relative;
-        z-index: 60 !important; /* Higher than mask */
+        z-index: 60 !important;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark body.is-native-scanning .scanner-header,
+    .dark body.is-native-scanning .scanner-footer {
+        background-color: #1f2937 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    /* 7. GLOBAL APP HEADER FIX */
-    /* Fix: Use 'fixed' to prevent it from dropping into the padded main content area */
+    /* 8. GLOBAL APP HEADER FIX */
     body.is-native-scanning nav, 
     body.is-native-scanning header {
-        position: fixed !important; /* Keep it pinned to top */
+        position: fixed !important; 
         top: 0;
         left: 0;
         right: 0;
         width: 100%;
         z-index: 70 !important;
         background-color: #fff !important; 
-        
-        /* Respect Safe Area (Status Bar) - Standard, no extra fallback */
         padding-top: env(safe-area-inset-top) !important;
-        box-sizing: content-box !important; /* Ensure padding adds to height if needed, OR border-box if we want fixed h-16 */
+        box-sizing: content-box !important;
     }
     
     /* Ensure content is not hidden behind the fixed header */
     body.is-native-scanning main {
-        /* Base 4rem (nav height) + Safe Area Padding */
-        padding-top: calc(4rem + env(safe-area-inset-top)) !important;
+        /* Reduced to 0.1rem to minimalize gap, pushing title right against navbar */
+        padding-top: calc(0.1rem + env(safe-area-inset-top)) !important;
     }
 
-    /* Remove extra padding from the page wrapper to reduce gap */
+    /* Adjust main wrapper - reduce top margin, full width */
     body.is-native-scanning main > div {
         padding-top: 0 !important; 
-        margin-top: -2.5rem !important; /* Aggressively pull up closer to nav */
+        margin-top: 0 !important;
+        padding-left: 0.1rem !important;
+        padding-right: 0.1rem !important;
+    }
+
+    /* 9. DISABLE PULL-TO-REFRESH during native scanning */
+    body.is-native-scanning {
+        touch-action: pan-y !important; /* Allow vertical scroll */
+        overflow-x: hidden !important;
+        overflow-y: auto !important; /* Allow scroll if content is long */
+    }
+    
+    /* Force hide pulltorefresh element if it exists */
+    body.is-native-scanning .ptr--ptr,
+    body.is-native-scanning .ptr--box {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* 10. AGGRESSIVE SPACING RESET for Native Scanning */
+    body.is-native-scanning #scan-wrapper {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        padding-left: 0.1rem !important;
+        padding-right: 0.1rem !important;
+    }
+
+    body.is-native-scanning #scan-wrapper > div {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    /* Target py-6 utility class */
+    body.is-native-scanning .py-6,
+    body.is-native-scanning .py-4,
+    body.is-native-scanning .pt-6,
+    body.is-native-scanning .pt-4 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Target space-y gap utilities */
+    body.is-native-scanning .space-y-4 > * + *,
+    body.is-native-scanning .space-y-6 > * + * {
+        margin-top: 0.5rem !important;
     }
     
     .dark body.is-native-scanning nav, 
@@ -109,11 +176,14 @@
         background-color: #1f2937 !important;
     }
     
-    /* 8. WEB SCANNER ASPECT RATIO FIX */
+    /* =========================================
+       WEB SCANNER (Standard)
+       ========================================= */ 
+    
     /* Ensure strict square shape for Web Scanner */
     .scanner-container {
         aspect-ratio: 1 / 1 !important;
-        max-height: 80vh; /* Prevent overflow on small screens */
+        max-height: 80vh; 
         width: 100% !important;
         overflow: hidden !important;
     }
@@ -222,3 +292,26 @@
     }
 }
 
+
+    /* Tom Select Dark Mode Overrides */
+    .dark .ts-control, 
+    .dark .ts-control input {
+        @apply bg-gray-900 border-gray-700 text-gray-100;
+    }
+    
+    .dark .ts-wrapper.focus .ts-control {
+        @apply border-primary-500 ring-primary-500 ring-2 ring-opacity-50 !important;
+    }
+
+    .dark .ts-dropdown {
+        @apply bg-gray-800 border-gray-700 text-gray-100;
+    }
+    
+    .dark .ts-dropdown .option:not(.disabled):hover,
+    .dark .ts-dropdown .option.active {
+        @apply bg-gray-700/50 text-white;
+    }
+    
+    .dark .ts-dropdown .option[data-selectable] {
+        @apply text-gray-300;
+    }

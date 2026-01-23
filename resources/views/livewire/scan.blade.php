@@ -487,9 +487,9 @@
             if (window.Capacitor?.isNativePlatform?.()) {
                 // 1. Native Mock Location Check
                 try {
-                    // Check if plugin is available
-                    if (Capacitor.Plugins.MockLocation) {
-                         const mockResult = await Capacitor.Plugins.MockLocation.checkMockLocation();
+                    // Check using global wrapper
+                    if (window.checkMockLocation) {
+                         const mockResult = await window.checkMockLocation();
                          if (mockResult.isMock) {
                              throw new Error('FAKE_GPS_DETECTED: Mock location is enabled. Please disable it to continue.');
                          }
@@ -507,8 +507,8 @@
                 }
                 return await Capacitor.Plugins.Geolocation.getCurrentPosition({
                     enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+                    timeout: 30000,
+                    maximumAge: 3000
                 });
             } else {
                 if (!navigator.geolocation) {
@@ -517,8 +517,8 @@
                 return await new Promise((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
+                        timeout: 30000,
+                        maximumAge: 3000
                     });
                 });
             }
@@ -646,14 +646,22 @@
         function initScanner() {
             if (state.isAbsence || state.isComplete || state.approvedAbsence) return;
 
+            let scanner = null;
             const scannerEl = document.getElementById('scanner');
-            if (!scannerEl || typeof Html5Qrcode === 'undefined') return;
 
-            const scanner = new Html5Qrcode('scanner');
+            if (window.isNativeApp()) {
+                // Native: Just start the process, do NOT init Html5Qrcode
+                setTimeout(startScanning, 500);
+            } else {
+                // Web: Init Html5Qrcode
+                if (scannerEl && typeof Html5Qrcode !== 'undefined') {
+                    scanner = new Html5Qrcode('scanner');
+                }
+            }
+
             const config = {
                 formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 fps: 30,
-                // aspectRatio: 1.0, // Removed to allow natural camera ratio
                 qrbox: function(viewfinderWidth, viewfinderHeight) {
                     let minEdgePercentage = 0.7; // 70%
                     let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
@@ -675,7 +683,7 @@
                     return;
                 }
 
-                if (scanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                if (scanner && scanner.getState() === Html5QrcodeScannerState.SCANNING) {
                     await scanner.stop();
                     setShowOverlay(false);
                     state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
@@ -694,8 +702,13 @@
                     else overlay.classList.add('hidden');
                 }
                 if (placeholder) {
-                     if (show) placeholder.style.display = 'none';
-                     else placeholder.style.display = 'block';
+                     // Check native global class instead of just window.isNativeApp() to rely on CSS state match
+                     if (document.body.classList.contains('is-native-scanning')) {
+                         placeholder.style.display = 'none';
+                     } else {
+                         if (show) placeholder.style.display = 'none';
+                         else placeholder.style.display = 'block';
+                     }
                 }
             }
             // Initial expose
@@ -725,7 +738,7 @@
                     }
 
                     // LOGIC LAMA (WEB)
-                    if (scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                    if (scanner && scanner.getState() === Html5QrcodeScannerState.PAUSED) {
                         return scanner.resume();
                     }
 
@@ -773,7 +786,7 @@
             }
 
             async function onScanSuccess(decodedText) {
-                 if (scanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                 if (scanner && scanner.getState() === Html5QrcodeScannerState.SCANNING) {
                      scanner.pause(true);
                      setShowOverlay(false);
                  }
@@ -804,7 +817,7 @@
                         setTimeout(() => {
                             if (window.isNativeApp()) {
                                 startScanning();
-                            } else if (scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                            } else if (scanner && scanner.getState() === Html5QrcodeScannerState.PAUSED) {
                                 scanner.resume();
                                 setShowOverlay(true);
                             }
@@ -824,7 +837,7 @@
                     
                 } catch (error) {
                     console.error('Validation Error', error);
-                    if (scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                    if (scanner && scanner.getState() === Html5QrcodeScannerState.PAUSED) {
                         scanner.resume();
                         setShowOverlay(true);
                     }
@@ -834,8 +847,17 @@
             async function enterSelfieMode() {
                 state.isSelfieMode = true;
                 
-                // Stop scanner to switch camera
-                if (scanner.getState() === Html5QrcodeScannerState.SCANNING || scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                // Stop native scanner if running (critical for camera handoff)
+                if (window.isNativeApp() && window.stopNativeBarcodeScanner) {
+                    await window.stopNativeBarcodeScanner();
+                }
+                
+                // Explicitly remove scanning class (in case cleanup didn't complete)
+                document.body.classList.remove('is-native-scanning');
+                document.documentElement.classList.remove('is-native-scanning');
+                
+                // Stop web scanner to switch camera
+                if (scanner && (scanner.getState() === Html5QrcodeScannerState.SCANNING || scanner.getState() === Html5QrcodeScannerState.PAUSED)) {
                     await scanner.stop();
                 }
                 
@@ -1031,7 +1053,7 @@
 
             function handleScanResult(result, scanner, startScanning) {
                 if (result === true) {
-                    if (scanner.getState() === Html5QrcodeScannerState.SCANNING || scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                    if (scanner && (scanner.getState() === Html5QrcodeScannerState.SCANNING || scanner.getState() === Html5QrcodeScannerState.PAUSED)) {
                          scanner.stop();
                     }
                     setShowOverlay(false);
@@ -1177,10 +1199,12 @@
                 });
             });
 
-            observer.observe(scannerEl, {
-                childList: true,
-                subtree: true
-            });
+            if (scannerEl && !window.isNativeApp()) {
+                observer.observe(scannerEl, {
+                    childList: true,
+                    subtree: true
+                });
+            }
 
             // Handle shift selector
             if (!state.hasCheckedIn) {
@@ -1208,12 +1232,14 @@
                         }
 
                         if (!shift.value) {
-                            scanner.pause(true);
+                            if (scanner) {
+                                scanner.pause(true);
+                            }
                             if (state.errorMsg) {
                                 state.errorMsg.classList.remove('hidden');
                                 state.errorMsg.innerHTML = msg;
                             }
-                        } else if (scanner.getState() === Html5QrcodeScannerState.PAUSED) {
+                        } else if (scanner && scanner.getState() === Html5QrcodeScannerState.PAUSED) {
                             scanner.resume();
                             if (state.errorMsg) {
                                 state.errorMsg.classList.add('hidden');

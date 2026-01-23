@@ -7,10 +7,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LeaveRequested extends Notification implements ShouldQueue
+class LeaveRequested extends Notification
 {
-    use Queueable;
-
     public $attendance;
     public $fromDate;
     public $toDate;
@@ -32,51 +30,7 @@ class LeaveRequested extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-        
-        // Add mail if admin email is configured
-        $adminEmail = \App\Models\Setting::getValue('notif.admin_email');
-        if (!empty($adminEmail) && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
-            $channels[] = 'mail';
-        }
-        
-        return $channels;
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        $userName = $this->attendance->user->name ?? 'Unknown';
-        $leaveType = $this->attendance->status === 'sick' ? 'Sakit' : 'Izin';
-        
-        // Get app name and support contact from settings
-        $appName = \App\Models\Setting::getValue('app.name', config('app.name', 'PasPapan'));
-        $supportEmail = \App\Models\Setting::getValue('app.support_contact', config('mail.from.address'));
-        
-        // Format date range
-        if ($this->fromDate && $this->toDate && $this->totalDays > 1) {
-            $dateDisplay = $this->fromDate->format('d M Y') . ' s/d ' . $this->toDate->format('d M Y');
-            $daysInfo = "({$this->totalDays} hari)";
-        } else {
-            $dateDisplay = $this->attendance->date?->format('d M Y') ?? 'Unknown';
-            $daysInfo = "(1 hari)";
-        }
-        
-        return (new MailMessage)
-            ->from(config('mail.from.address'), \App\Models\Setting::getValue('mail.from_name', config('app.name')))
-            ->replyTo(
-                \App\Models\Setting::getValue('mail.reply_to_address', $supportEmail),
-                \App\Models\Setting::getValue('mail.reply_to_name', config('app.name'))
-            )
-            ->subject('Sistem' . " - " . __('New Leave Request') . ": $userName")
-            ->view('emails.leave-requested', [
-                'userName' => $userName,
-                'leaveType' => $leaveType,
-                'dateDisplay' => $dateDisplay,
-                'daysInfo' => $daysInfo,
-                'reason' => $this->attendance->note ?? '-',
-                'url' => route('admin.leaves'),
-                'supportEmail' => $supportEmail
-            ]);
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array
