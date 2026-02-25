@@ -13,7 +13,7 @@ class Settings extends Component
     public function mount()
     {
         if (!auth()->check() || !auth()->user()->isAdmin) {
-             abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized action.');
         }
     }
 
@@ -24,7 +24,7 @@ class Settings extends Component
         }
 
         $setting = Setting::find($id);
-        
+
         if ($setting) {
             // Handle boolean toggle where value might be sent as true/false string or 1/0
             if ($setting->type === 'boolean') {
@@ -35,10 +35,10 @@ class Settings extends Component
             Cache::forget("setting.{$setting->key}");
 
             // Vital: Clear Enterprise License Cache if Company Name or Key changes
-            if (in_array($setting->key, ['app.company_name', 'enterprise_license_key'])) {
+            if (in_array($setting->key, ['app.company_name', 'app.support_contact', 'enterprise_license_key'])) {
                 Cache::forget('enterprise_license_valid');
             }
-            
+
             $this->dispatch('saved'); // For sweetalert or notification
         }
     }
