@@ -19,6 +19,10 @@ class PayrollManager extends Component
     public $showGenerateModal = false;
     public $isGenerating = false;
 
+    // Bulk Actions
+    public $selectedPayrolls = [];
+    public $selectAll = false;
+
     public function mount()
     {
         if (\App\Helpers\Editions::payrollLocked()) {
@@ -30,6 +34,35 @@ class PayrollManager extends Component
         $this->year = Carbon::now()->year;
     }
 
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedPayrolls = Payroll::where('month', $this->month)
+                ->where('year', $this->year)
+                ->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        } else {
+            $this->selectedPayrolls = [];
+        }
+    }
+
+    // Determine if the current user is Superadmin or Finance Rank 1
+    public function getCanManageProperty()
+    {
+        $user = Auth::user();
+        if ($user->isSuperadmin) {
+            return true;
+        }
+
+        // Check if Finance and Rank 1 (e.g., Head of Finance)
+        if ($user->division && strtolower($user->division->name) === 'finance') {
+            if ($user->jobTitle && $user->jobTitle->jobLevel && $user->jobTitle->jobLevel->rank === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function render()
     {
         $payrolls = Payroll::with('user')
@@ -38,7 +71,7 @@ class PayrollManager extends Component
             ->paginate(10);
 
         return view('livewire.payroll-manager', [
-            'payrolls' => $payrolls
+            'payrolls' => $payrolls,
         ])->layout('layouts.app'); // Ensure layout is set
     }
 
@@ -95,6 +128,8 @@ class PayrollManager extends Component
             $this->dispatch('close-modal', 'generate-payroll-modal'); // Close modal
             $this->showGenerateModal = false;
             $this->isGenerating = false;
+            $this->selectedPayrolls = [];
+            $this->selectAll = false;
 
             $this->dispatch('feature-lock', title: 'Payroll Locked', message: 'Payroll Generation is an Enterprise Feature 🔒. Please Upgrade.');
             return;
@@ -102,6 +137,8 @@ class PayrollManager extends Component
 
         $this->isGenerating = false;
         $this->showGenerateModal = false;
+        $this->selectedPayrolls = [];
+        $this->selectAll = false;
 
         $this->dispatch('banner-message', [
             'style' => 'success',
@@ -116,12 +153,14 @@ class PayrollManager extends Component
 
     public function publish($id)
     {
+        if (!$this->canManage) return;
         Payroll::find($id)->update(['status' => 'published']);
         session()->flash('success', 'Payroll published.');
     }
 
     public function pay($id)
     {
+        if (!$this->canManage) return;
         $payroll = Payroll::find($id);
 
         if ($payroll) {
@@ -139,5 +178,40 @@ class PayrollManager extends Component
 
             session()->flash('success', 'Payroll marked as paid.');
         }
+    }
+
+    public function bulkPublish()
+    {
+        if (!$this->canManage || empty($this->selectedPayrolls)) return;
+
+        Payroll::whereIn('id', $this->selectedPayrolls)->where('status', 'draft')->update(['status' => 'published']);
+        $this->selectedPayrolls = [];
+        $this->selectAll = false;
+        $this->dispatch('banner-message', ['style' => 'success', 'message' => 'Selected payrolls published.']);
+    }
+
+    public function bulkPay()
+    {
+        if (!$this->canManage || empty($this->selectedPayrolls)) return;
+
+        $payrolls = Payroll::whereIn('id', $this->selectedPayrolls)->where('status', 'published')->get();
+
+        foreach ($payrolls as $payroll) {
+            $payroll->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            // Sync: Mark related Kasbons as Paid
+            \App\Models\CashAdvance::where('user_id', $payroll->user_id)
+                ->where('status', 'approved')
+                ->where('payment_month', $payroll->month)
+                ->where('payment_year', $payroll->year)
+                ->update(['status' => 'paid']);
+        }
+
+        $this->selectedPayrolls = [];
+        $this->selectAll = false;
+        $this->dispatch('banner-message', ['style' => 'success', 'message' => 'Selected payrolls marked as paid.']);
     }
 }
