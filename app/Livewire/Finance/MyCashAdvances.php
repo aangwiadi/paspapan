@@ -29,13 +29,6 @@ class MyCashAdvances extends Component
         $this->payment_year = now()->addMonth()->year;
     }
 
-    protected $rules = [
-        'amount' => 'required|numeric|min:1000',
-        'purpose' => 'required|string|min:5|max:255',
-        'payment_month' => 'required|integer|min:1|max:12',
-        'payment_year' => 'required|integer|min:2020|max:2100',
-    ];
-
     public function openCreateModal()
     {
         $this->reset(['amount', 'purpose']);
@@ -48,7 +41,16 @@ class MyCashAdvances extends Component
             $this->amount = str_replace(['.', ','], '', (string) $this->amount);
         }
 
-        $this->validate();
+        $basicSalary = Auth::user()->basic_salary ?? 0;
+
+        $this->validate([
+            'amount' => ['required', 'numeric', 'min:1000', 'max:' . $basicSalary],
+            'purpose' => ['required', 'string', 'min:5', 'max:255'],
+            'payment_month' => ['required', 'integer', 'min:1', 'max:12'],
+            'payment_year' => ['required', 'integer', 'min:2020', 'max:2100'],
+        ], [
+            'amount.max' => 'Pengajuan Kasbon tidak boleh melebihi Gaji Pokok (Rp ' . number_format($basicSalary, 0, ',', '.') . ').',
+        ]);
 
         $advance = CashAdvance::create([
             'user_id' => Auth::id(),
