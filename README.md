@@ -63,7 +63,7 @@ Whether your team is in the office, on the field, or working from home, PasPapan
 ### 💼 Comprehensive HR Suite
 - **Automated Payroll**: Say goodbye to spreadsheets. Auto-calculate salaries, overtime, and deductions with professional PDF payslip generation.
 - **Smart Shift Management**: Flexible scheduling that adapts to your team's rotation.
-- **Digital Workflow**: Streamlined approval chains for Leave, Overtime, and Reimbursement requests.
+- **Digital Workflow**: Streamlined approval chains for Leave, Overtime, Reimbursement, and **Kasbon / Cash Advance** requests centralized in one unified dashboard.
 
 ### 🚀 Enterprise-Grade Platform
 - **Real-Time Analytics**: Make data-driven decisions with a powerful dashboard tracking attendance trends and anomalies.
