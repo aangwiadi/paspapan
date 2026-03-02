@@ -314,9 +314,15 @@
              },
 
              renderCharts() {
-                // Safety check for Chart.js
+                // Robust checking for Chart object (handles slow CDN loading)
                 if (typeof Chart === 'undefined') {
-                    setTimeout(() => this.renderCharts(), 200);
+                    if (this.retryCount === undefined) this.retryCount = 0;
+                    if (this.retryCount < 20) { // Max 2 seconds (100ms * 20)
+                        this.retryCount++;
+                        setTimeout(() => this.renderCharts(), 100);
+                    } else {
+                        console.error('Chart.js failed to load from CDN within 2 seconds. The charts cannot be rendered.');
+                    }
                     return;
                 }
 

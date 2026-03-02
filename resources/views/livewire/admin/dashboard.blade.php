@@ -560,10 +560,18 @@ $date = Carbon\Carbon::now();
 
             return {
                 initChart() {
+                    // Robust checking for Chart object (handles slow CDN loading)
                     if (typeof Chart === 'undefined') {
-                        setTimeout(() => this.initChart(), 100);
+                        if (this.retryCount === undefined) this.retryCount = 0;
+                        if (this.retryCount < 20) { // Max 2 seconds (100ms * 20)
+                            this.retryCount++;
+                            setTimeout(() => this.initChart(), 100);
+                        } else {
+                            console.error('Chart.js failed to load from CDN within 2 seconds. The charts cannot be rendered.');
+                        }
                         return;
                     }
+
                     const ctx = this.$refs.canvas;
                     if (!ctx) return;
 
@@ -574,7 +582,7 @@ $date = Carbon\Carbon::now();
                     // Watch for Livewire Event
                     Livewire.on('chart-updated', (data) => {
                         // Parse the data correctly since it comes as array
-                        const chartData = data[0];
+                        const chartData = data[0] || data; // Handle both array and straight object
 
                         if (chart) {
                             chart.data.labels = chartData.labels;
