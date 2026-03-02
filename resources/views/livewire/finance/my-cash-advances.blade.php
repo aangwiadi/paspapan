@@ -168,7 +168,7 @@
 
                                 <div class="min-w-0 flex-1">
                                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-0.5">
-                                        <h4 class="font-bold text-gray-900 dark:text-white capitalize truncate text-sm sm:text-base">{{ __('Deduction Target') }}: {{ \Carbon\Carbon::create()->month($advance->payment_month)->translatedFormat('F') }} {{ $advance->payment_year }}</h4>
+                                        <h4 class="font-bold text-gray-900 dark:text-white capitalize truncate text-sm sm:text-base">{{ __('Deduction Target') }}: {{ \Carbon\Carbon::create()->month((int)$advance->payment_month)->translatedFormat('F') }} {{ $advance->payment_year }}</h4>
                                         <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide
                                                         @if($advance->status === 'approved') bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
                                                         @elseif($advance->status === 'rejected') bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
