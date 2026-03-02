@@ -12,7 +12,7 @@ class ScheduleComponent extends Component
     public $selectedUser = null;
     public $users = [];
     public $shifts = [];
-    
+
     // Modal State
     public $showModal = false;
     public $selectedDate = null;
@@ -21,11 +21,11 @@ class ScheduleComponent extends Component
 
     public function mount()
     {
-        $this->month = date('m');
-        $this->year = date('Y');
+        $this->month = (int) date('m');
+        $this->year = (int) date('Y');
         $this->users = \App\Models\User::orderBy('name')->get();
         $this->shifts = \App\Models\Shift::all();
-        
+
         // Auto-select first user if available
         if ($this->users->count() > 0) {
             $this->selectedUser = $this->users->first()->id;
@@ -35,15 +35,15 @@ class ScheduleComponent extends Component
     public function openModal($date)
     {
         if (!$this->selectedUser) return;
-        
+
         $this->selectedDate = $date;
         $this->showModal = true;
-        
+
         // Fetch existing schedule
         $schedule = \App\Models\Schedule::where('user_id', $this->selectedUser)
             ->where('date', $date)
             ->first();
-            
+
         if ($schedule) {
             $this->selectedShiftId = $schedule->shift_id;
             $this->selectedIsOff = $schedule->is_off;
@@ -82,9 +82,9 @@ class ScheduleComponent extends Component
     public function render()
     {
         // Ensure we have valid month/year, fallback to current
-        $year = (filter_var($this->year, FILTER_VALIDATE_INT) !== false) ? $this->year : date('Y');
-        $month = (filter_var($this->month, FILTER_VALIDATE_INT) !== false && $this->month >= 1 && $this->month <= 12) ? $this->month : date('m');
-        
+        $year = (int) ((filter_var($this->year, FILTER_VALIDATE_INT) !== false) ? $this->year : date('Y'));
+        $month = (int) ((filter_var($this->month, FILTER_VALIDATE_INT) !== false && $this->month >= 1 && $this->month <= 12) ? $this->month : date('m'));
+
         try {
             $date = \Carbon\Carbon::createFromDate($year, $month, 1);
         } catch (\Exception $e) {
@@ -94,10 +94,10 @@ class ScheduleComponent extends Component
         }
         $startOfMonth = $date->copy()->startOfMonth();
         $endOfMonth = $date->copy()->endOfMonth();
-        
+
         $startGrid = $startOfMonth->copy()->startOfWeek(\Carbon\Carbon::SUNDAY);
         $endGrid = $endOfMonth->copy()->endOfWeek(\Carbon\Carbon::SATURDAY);
-        
+
         $dates = [];
         $current = $startGrid->copy();
         while ($current <= $endGrid) {

@@ -23,8 +23,8 @@ class AnalyticsDashboard extends Component
             return redirect()->route('admin.dashboard');
         }
 
-        $this->month = date('m');
-        $this->year = date('Y');
+        $this->month = (int) date('m');
+        $this->year = (int) date('Y');
     }
 
     public function updated($property)
@@ -53,7 +53,7 @@ class AnalyticsDashboard extends Component
 
     public function getAttendanceTrendProperty()
     {
-        $startDate = Carbon::createFromDate($this->year, $this->month, 1);
+        $startDate = Carbon::createFromDate((int) $this->year, (int) $this->month, 1);
         $endDate = $startDate->copy()->endOfMonth();
 
         $data = DB::table('attendances')
@@ -256,7 +256,7 @@ class AnalyticsDashboard extends Component
 
     private function getWorkDaysInMonth()
     {
-        $start = Carbon::createFromDate($this->year, $this->month, 1);
+        $start = Carbon::createFromDate((int) $this->year, (int) $this->month, 1);
         $end = $start->copy()->endOfMonth();
 
         // Simple calculation: Weekdays only
