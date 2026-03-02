@@ -833,74 +833,32 @@
                         return;
                     }
 
+                    if (scanner && scanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                        return; // Already scanning, don't start again
+                    }
+
                     if (scanner && scanner.getState() === Html5QrcodeScannerState.PAUSED) {
                         return scanner.resume();
                     }
 
-                    // ===== Camera start strategy =====
-                    // 1. In regular browsers: discover deviceId via raw getUserMedia
-                    // 2. In WebViews: skip discovery (causes permission errors), use Html5Qrcode directly
-                    // 3. Fallback cascade: facingMode → environment → any camera
-
-                    let targetDeviceId = null;
-
-                    // Only try getUserMedia discovery in regular browsers (not WebView)
-                    if (!isWebView()) {
-                        const constraintAttempts = [
-                            { video: { facingMode: { exact: state.facingMode } } },
-                            { video: { facingMode: state.facingMode } },
-                            { video: true }
-                        ];
-
-                        for (const constraints of constraintAttempts) {
-                            try {
-                                const testStream = await navigator.mediaDevices.getUserMedia(constraints);
-                                const track = testStream.getVideoTracks()[0];
-                                if (track) {
-                                    targetDeviceId = track.getSettings().deviceId || null;
-                                    testStream.getTracks().forEach(t => t.stop());
-                                }
-                                if (targetDeviceId) break;
-                            } catch(e) {
-                                console.warn('getUserMedia discovery failed:', e.name);
-                                continue;
-                            }
-                        }
-
-                        if (targetDeviceId) {
-                            await new Promise(r => setTimeout(r, 300));
-                        }
-                    }
-
-                    // Start Html5Qrcode with discovered deviceId or facingMode fallback
+                    // Start scanner with facingMode cascade (no getUserMedia discovery —
+                    // discovery opens camera twice which causes OS stream conflicts)
                     let started = false;
 
-                    if (targetDeviceId) {
+                    const facingModes = [
+                        { facingMode: state.facingMode },
+                        { facingMode: 'environment' },
+                        { facingMode: 'user' }
+                    ];
+
+                    for (const fm of facingModes) {
                         try {
-                            await scanner.start(targetDeviceId, config, onScanSuccess);
+                            await scanner.start(fm, config, onScanSuccess);
                             started = true;
+                            break;
                         } catch(e) {
-                            console.warn('Start with discovered deviceId failed:', e);
-                        }
-                    }
-
-                    if (!started) {
-                        // Fallback cascade
-                        const fallbacks = [
-                            { facingMode: state.facingMode },
-                            { facingMode: 'environment' },
-                            { facingMode: 'user' }
-                        ];
-
-                        for (const fb of fallbacks) {
-                            try {
-                                await scanner.start(fb, config, onScanSuccess);
-                                started = true;
-                                break;
-                            } catch(e) {
-                                console.warn('Fallback start failed with', fb, e);
-                                continue;
-                            }
+                            console.warn('Scanner start failed with', fm, ':', e.message);
+                            continue;
                         }
                     }
 
