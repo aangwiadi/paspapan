@@ -53,7 +53,7 @@
                     <h3 class="text-3xl font-black text-gray-900 dark:text-white mt-1">{{ $summary['total_employees'] }}</h3>
                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        Employee Active
+                        {{ __('Employee Active') }}
                     </p>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                 <div class="relative z-10">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Late Occurrence') }}</p>
                     <h3 class="text-3xl font-black text-gray-900 dark:text-white mt-1">{{ $summary['late_rate'] }}%</h3>
-                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">Of total present</p>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{{ __('Of total present') }}</p>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                 <div class="relative z-10">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Avg Daily Presence') }}</p>
                     <h3 class="text-3xl font-black text-gray-900 dark:text-white mt-1">{{ $summary['avg_daily_attendance'] }}</h3>
-                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium">People / Day</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium">{{ __('People / Day') }}</p>
                 </div>
             </div>
         </div>
