@@ -1,9 +1,8 @@
-const CACHE_NAME = "absensi-v2"; // Bumped version to invalidate old caches
+const CACHE_NAME = "absensi-v3"; // Bumped version to invalidate old caches
 const urlsToCache = [
-    "/pwa",
     "/manifest.json",
-    "/images/icons/web-app-manifest-192x192.png",
-    "/images/icons/web-app-manifest-512x512.png",
+    "/images/icons/icon-192x192.png",
+    "/images/icons/icon-512x512.png",
 ];
 
 // Install Service Worker

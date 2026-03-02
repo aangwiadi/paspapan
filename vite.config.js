@@ -15,10 +15,10 @@ export default defineConfig({
         devSourcemap: true,
     },
     server: {
-        host: true,
+        host: '127.0.0.1',
         cors: true,
         hmr: {
-            host: 'localhost',
+            host: '127.0.0.1',
         },
     },
     build: {

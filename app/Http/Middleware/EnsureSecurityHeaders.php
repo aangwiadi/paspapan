@@ -38,7 +38,7 @@ class EnsureSecurityHeaders
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://fonts.bunny.net",
             "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:",
             "img-src 'self' data: blob: https: http:",
-            "connect-src 'self' https://tile.openstreetmap.org https://cdn.jsdelivr.net wss:",
+            "connect-src 'self' https://tile.openstreetmap.org https://unpkg.com https://cdn.jsdelivr.net wss:",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",
@@ -66,15 +66,7 @@ class EnsureSecurityHeaders
                 'http://127.0.0.1:5174',
                 'ws://127.0.0.1:5174',
                 'wss://127.0.0.1:5174',
-                // IPv6
-                'http://[::1]:5173',
-                'ws://[::1]:5173',
-                'wss://[::1]:5173',
-                'http://[::1]:5174',
-                'ws://[::1]:5174',
-                'wss://[::1]:5174',
             ];
-
             // If accessing via LAN (e.g. 192.168.x.x), allow that IP with port 5173/5174 specifically
             if ($host !== 'localhost' && $host !== '127.0.0.1' && $host !== '[::1]') {
                 $viteHosts = array_merge($viteHosts, [
