@@ -717,8 +717,16 @@
                 }
 
                 if (scanner && (scanner.getState() === Html5QrcodeScannerState.SCANNING || scanner.getState() === Html5QrcodeScannerState.PAUSED)) {
-                    await scanner.stop();
+                    // Turn off scanning and overlay UI immediately
                     setShowOverlay(false);
+
+                    try {
+                        await scanner.stop();
+                        // Clear the DOM to force browser to tear down old video element natively
+                        scanner.clear();
+                    } catch (e) {
+                        console.warn('Error stopping scanner during switch', e);
+                    }
                     
                     try {
                         const devices = await Html5Qrcode.getCameras();
@@ -735,7 +743,13 @@
                          state.cameraId = null;
                     }
 
-                    await startScanning();
+                    // A strict hardware delay is necessary on many Android devices 
+                    // to give the OS camera service time to release the old sensor lock
+                    setTimeout(async () => {
+                        // Re-initialize a completely fresh scanner instance to prevent stale stream locks
+                        scanner = new Html5Qrcode('scanner');
+                        await startScanning();
+                    }, 500);
                 }
             };
 
@@ -850,7 +864,7 @@
                             video.style.objectFit = 'cover';
                             video.style.borderRadius = '1rem';
                         }
-                        
+
                         setShowOverlay(true);
                     } catch (fallbackErr) {
                          console.warn('Fallback scanner start failed, trying complete unconstrained fallback...', fallbackErr);
@@ -879,6 +893,8 @@
                              }
                          } catch (finalErr) {
                              console.error('Final Scanner start error:', finalErr);
+                             // Attempt to clear any hanging broken stream connections
+                             try { scanner.clear(); } catch(e) {}
                              
                              // If even the most generic fallback fails, show user-friendly error
                              await Swal.fire({
