@@ -926,17 +926,30 @@
 
                     const errorMsg = typeof err === 'string' ? err : (err && err.message ? err.message : JSON.stringify(err));
 
-                    // Check if it's NotReadableError and the camera was actually just started by another thread
-                    if (scanner && scanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                        console.warn('[CAM DEBUG] Ignoring error because scanner is somehow already scanning', err);
-                    } else {
-                        await Swal.fire({
-                            icon: 'error',
-                            title: 'Camera Error',
-                            text: errorMsg || 'Unknown error',
-                            confirmButtonColor: '#6366f1'
-                        });
+                    // ULTRA-STRICT Validation:
+                    // If the library threw an asynchronous error but the camera is physically running on screen, ignore the error!
+                    const videoStream = document.querySelector('#scanner video');
+                    if (videoStream && videoStream.srcObject && videoStream.srcObject.active) {
+                        console.warn('[CAM DEBUG] Suppressing ghost error because hardware is actively streaming!', err);
+                        setShowOverlay(true);
+                        return;
                     }
+
+                    // Also check if html5-qrcode's internal state machine thinks it's scanning
+                    try {
+                        if (scanner && scanner.getState() === 2) { // 2 = SCANNING
+                            console.warn('[CAM DEBUG] Ignoring error because scanner state is SCANNING', err);
+                            setShowOverlay(true);
+                            return;
+                        }
+                    } catch(e) {}
+
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Camera Error',
+                        text: errorMsg || 'Unknown error',
+                        confirmButtonColor: '#6366f1'
+                    });
 
                     setShowOverlay(false);
                 } finally {
