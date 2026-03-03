@@ -40,7 +40,6 @@ class UserFactory extends Factory
             'birth_date' => fake()->date(),
             'birth_place' => fake()->city(),
             'address' => fake()->address(),
-            'city' => fake()->city(),
             'password' => static::$password ??= Hash::make('password'),
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
@@ -57,7 +56,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
@@ -67,13 +66,12 @@ class UserFactory extends Factory
      */
     public function admin(bool $superadmin = false): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'nip' => '0000000000000000',
             'phone' => '00000000000',
             'birth_date' => null,
             'birth_place' => null,
             'address' => '',
-            'city' => '',
             'group' => $superadmin ? 'superadmin' : 'admin',
             'gender' => 'male',
         ]);
@@ -91,7 +89,7 @@ class UserFactory extends Factory
 
         return $this->has(
             Team::factory()
-                ->state(fn (array $attributes, User $user) => [
+                ->state(fn(array $attributes, User $user) => [
                     'name' => $user->name . '\'s Team',
                     'user_id' => $user->id,
                     'personal_team' => true,

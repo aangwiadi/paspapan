@@ -18,8 +18,11 @@ class UserForm extends Form
     public $phone = '';
     public $password = null;
     public $gender = null;
-    public $city = '';
     public $address = '';
+    public $provinsi_kode = null;
+    public $kabupaten_kode = null;
+    public $kecamatan_kode = null;
+    public $kelurahan_kode = null;
     public $group = 'user';
     public $birth_date = null;
     public $birth_place = '';
@@ -49,8 +52,11 @@ class UserForm extends Form
             'phone' => ['required',  'string', 'min:5', 'max:255'],
             'password' => ['nullable', 'string', 'min:4', 'max:255'],
             'gender' => [$requiredOrNullable, 'in:male,female'],
-            'city' => [$requiredOrNullable, 'string', 'max:255'],
             'address' => [$requiredOrNullable, 'string', 'max:255'],
+            'provinsi_kode' => [$requiredOrNullable, 'string', 'max:13'],
+            'kabupaten_kode' => [$requiredOrNullable, 'string', 'max:13'],
+            'kecamatan_kode' => [$requiredOrNullable, 'string', 'max:13'],
+            'kelurahan_kode' => [$requiredOrNullable, 'string', 'max:13'],
             'group' => ['nullable', 'string', 'max:255', Rule::in(User::$groups)],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:255'],
@@ -74,8 +80,11 @@ class UserForm extends Form
             $this->password = $user->raw_password;
         }
         $this->gender = $user->gender;
-        $this->city = $user->city;
         $this->address = $user->address;
+        $this->provinsi_kode = $user->provinsi_kode;
+        $this->kabupaten_kode = $user->kabupaten_kode;
+        $this->kecamatan_kode = $user->kecamatan_kode;
+        $this->kelurahan_kode = $user->kelurahan_kode;
         $this->group = $user->group;
         $this->birth_date = $user->birth_date
             ? \Illuminate\Support\Carbon::parse($user->birth_date)->format('Y-m-d')
@@ -134,6 +143,10 @@ class UserForm extends Form
         $this->division_id = $this->division_id ?: null;
         $this->job_title_id = $this->job_title_id ?: null;
         $this->education_id = $this->education_id ?: null;
+        $this->provinsi_kode = $this->provinsi_kode ?: null;
+        $this->kabupaten_kode = $this->kabupaten_kode ?: null;
+        $this->kecamatan_kode = $this->kecamatan_kode ?: null;
+        $this->kelurahan_kode = $this->kelurahan_kode ?: null;
         $this->birth_date = $this->birth_date ?: null;
     }
 

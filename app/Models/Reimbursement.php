@@ -16,11 +16,17 @@ class Reimbursement extends Model
         'status',
         'admin_note',
         'approved_by',
+        'head_approved_by',
+        'head_approved_at',
+        'finance_approved_by',
+        'finance_approved_at',
     ];
 
     protected $casts = [
         'date' => 'date',
         'amount' => 'decimal:2',
+        'head_approved_at' => 'datetime',
+        'finance_approved_at' => 'datetime',
     ];
 
     public function user()
@@ -31,5 +37,15 @@ class Reimbursement extends Model
     public function approvedBy()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function headApprover()
+    {
+        return $this->belongsTo(User::class, 'head_approved_by');
+    }
+
+    public function financeApprover()
+    {
+        return $this->belongsTo(User::class, 'finance_approved_by');
     }
 }

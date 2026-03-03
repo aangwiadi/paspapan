@@ -89,6 +89,12 @@ Whether your team is in the office, on the field, or working from home, PasPapan
 - **Native Mobile Experience**: A lightning-fast, offline-capable app for Android & iOS (via PWA).
 - **Global Ready**: Multi-language support (English & Indonesian) for diverse teams.
 
+### ✨ What's New
+- **Double-Layered Approval Workflow**: Advanced multi-tier request approvals for Kasbon and Reimbursements, routing sequentially from Division Head to Finance Head.
+- **Dynamic Structural Seeding**: Built-in accurate corporate hierarchies right out of the box (Divisions, Levels, automated Job Titles mapping, and standardized 3-Shift rotas).
+- **Multi-Region & Localization Support**: Refined UI bindings for Regional (`Wilayah`) mapping and fully togglable ID/EN translations throughout the admin panels.
+- **Robust Web Camera Fallback**: Squashed `NotReadableError` bugs with reliable fallback handlers for environments lacking native Capacitor camera plugins.
+
 ---
 
 ## <a id="application-previews"></a>📸 Application Previews

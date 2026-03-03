@@ -89,6 +89,12 @@ Baik tim Anda bekerja di kantor, di lapangan, atau dari rumah, PasPapan memastik
 - **Pengalaman Mobile Native**: Aplikasi super cepat dan bisa offline untuk Android & iOS (via PWA).
 - **Siap Global**: Dukungan multi-bahasa (Inggris & Indonesia) untuk tim yang beragam.
 
+### ✨ Apa yang Baru
+- **Alur Persetujuan Berlapis (Double Approval)**: Permintaan Kasbon dan Reimbursement kini disetujui secara otomatis & berjenjang dari Kepala Divisi (Head) lalu diteruskan ke Kepala Keuangan (Finance).
+- **Struktur Perusahaan Realistis**: Seeder pabrikan yang langsung menggenerate 5 Divisi Utama secara dinamis lengkap dengan jenjang karir (Head, Manager, Senior, Staff) dan 3 Shift kerja (Pagi, Sore, Malam).
+- **Dukungan Multi-Wilayah & Bahasa**: Pembaruan menyeluruh pada UI admin untuk mendukung pengelolaan Regional (Wilayah) dan penyesuaian bahasa ganda (ID/EN) yang dinamis.
+- **Perbaikan Kamera Web & Fallback PWA**: Menghilangkan bug `NotReadableError` pada browser, memastikan fallback switch camera via Web/PWA berjalan mulus bersamaan dengan versi Native APK.
+
 ---
 
 ## <a id="tampilan-aplikasi"></a>📸 Tampilan Aplikasi

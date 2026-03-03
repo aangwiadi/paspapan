@@ -59,7 +59,6 @@
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Employee') }}</th>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Details') }}</th>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Contact') }}</th>
-                            <th scope="col" class="px-6 py-4 font-medium">{{ __('Location') }}</th>
                             <th scope="col" class="px-6 py-4 text-right font-medium">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
@@ -89,9 +88,6 @@
                                     <div class="text-gray-900 dark:text-white font-medium">{{ $user->phone }}</div>
                                     <div class="text-xs text-gray-500">NIP: {{ $user->nip }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                    {{ $user->city ?? '-' }}
-                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-2">
                                         <button wire:click="show('{{ $user->id }}')" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ __('View') }}">
@@ -110,7 +106,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                     <div class="flex flex-col items-center justify-center">
                                         <x-heroicon-o-users class="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
                                         <p class="font-medium">{{ __('No employees found') }}</p>
@@ -239,11 +235,40 @@
                         <x-input-error for="form.gender" class="mt-2" />
                     </div>
 
-                    <!-- City -->
-                    <div>
-                        <x-label for="create_city" value="{{ __('City') }}" />
-                        <x-input id="create_city" type="text" class="mt-1 block w-full" wire:model="form.city" />
-                        <x-input-error for="form.city" class="mt-2" />
+                    <!-- Wilayah Selection (Create) -->
+                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                             <x-label for="create_provinsi" value="{{ __('Provinsi') }}" />
+                             <div class="mt-1">
+                                <x-tom-select id="create_provinsi" wire:model.live="form.provinsi_kode" placeholder="{{ __('Pilih Provinsi') }}"
+                                    :options="$provinces->map(fn($p) => ['id' => $p->kode, 'name' => $p->nama])" />
+                             </div>
+                             <x-input-error for="form.provinsi_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="create_kabupaten" value="{{ __('Kabupaten/Kota') }}" />
+                             <div class="mt-1" wire:key="create-kab-{{ $form->provinsi_kode ?? 'empty' }}">
+                                <x-tom-select id="create_kabupaten" wire:model.live="form.kabupaten_kode" placeholder="{{ __('Pilih Kabupaten/Kota') }}"
+                                    :options="$regencies->map(fn($r) => ['id' => $r->kode, 'name' => $r->nama])" />
+                             </div>
+                             <x-input-error for="form.kabupaten_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="create_kecamatan" value="{{ __('Kecamatan') }}" />
+                             <div class="mt-1" wire:key="create-kec-{{ $form->kabupaten_kode ?? 'empty' }}">
+                                <x-tom-select id="create_kecamatan" wire:model.live="form.kecamatan_kode" placeholder="{{ __('Pilih Kecamatan') }}"
+                                    :options="$districts->map(fn($d) => ['id' => $d->kode, 'name' => $d->nama])" />
+                             </div>
+                             <x-input-error for="form.kecamatan_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="create_kelurahan" value="{{ __('Kelurahan/Desa') }}" />
+                             <div class="mt-1" wire:key="create-kel-{{ $form->kecamatan_kode ?? 'empty' }}">
+                                <x-tom-select id="create_kelurahan" wire:model.live="form.kelurahan_kode" placeholder="{{ __('Pilih Kelurahan/Desa') }}"
+                                    :options="$villages->map(fn($v) => ['id' => $v->kode, 'name' => $v->nama])" />
+                             </div>
+                             <x-input-error for="form.kelurahan_kode" class="mt-2" />
+                        </div>
                     </div>
 
                     <!-- Address -->
@@ -259,7 +284,7 @@
                              <x-label for="create_division" value="{{ __('Division') }}" />
                              <div class="mt-1">
                                 <x-tom-select id="create_division" wire:model.live="form.division_id" placeholder="{{ __('Select Division') }}"
-                                    :options="App\Models\Division::all()->map(fn($d) => ['id' => $d->id, 'name' => $d->name])" />
+                                    :options="App\Models\Division::all()->map(fn($d) => ['id' => $d->id, 'name' => $d->name])->values()" />
                              </div>
                              <x-input-error for="form.division_id" class="mt-2" />
                         </div>
@@ -267,7 +292,7 @@
                              <x-label for="create_jobTitle" value="{{ __('Job Title') }}" />
                              <div class="mt-1" wire:key="create-job-title-wrapper-{{ $form->division_id ?? 'all' }}">
                                 <x-tom-select id="create_jobTitle" wire:model.live="form.job_title_id" placeholder="{{ __('Select Job Title') }}"
-                                    :options="$availableJobTitles->map(fn($j) => ['id' => $j->id, 'name' => $j->name])" />
+                                    :options="$availableJobTitles->map(fn($j) => ['id' => $j->id, 'name' => $j->name])->values()" />
                              </div>
                              <x-input-error for="form.job_title_id" class="mt-2" />
                         </div>
@@ -384,11 +409,40 @@
                         <x-input-error for="form.gender" class="mt-2" />
                      </div>
 
-                    <!-- City -->
-                    <div>
-                        <x-label for="edit_city" value="{{ __('City') }}" />
-                        <x-input id="edit_city" type="text" class="mt-1 block w-full" wire:model="form.city" />
-                        <x-input-error for="form.city" class="mt-2" />
+                    <!-- Wilayah Selection (Edit) -->
+                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                             <x-label for="edit_provinsi" value="{{ __('Provinsi') }}" />
+                             <div class="mt-1">
+                                <x-tom-select id="edit_provinsi" wire:model.live="form.provinsi_kode" placeholder="{{ __('Pilih Provinsi') }}"
+                                    :options="$provinces->map(fn($p) => ['id' => $p->kode, 'name' => $p->nama])" />
+                             </div>
+                             <x-input-error for="form.provinsi_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="edit_kabupaten" value="{{ __('Kabupaten/Kota') }}" />
+                             <div class="mt-1" wire:key="edit-kab-{{ $form->provinsi_kode ?? 'empty' }}">
+                                <x-tom-select id="edit_kabupaten" wire:model.live="form.kabupaten_kode" placeholder="{{ __('Pilih Kabupaten/Kota') }}"
+                                    :options="$regencies->map(fn($r) => ['id' => $r->kode, 'name' => $r->nama])" />
+                             </div>
+                             <x-input-error for="form.kabupaten_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="edit_kecamatan" value="{{ __('Kecamatan') }}" />
+                             <div class="mt-1" wire:key="edit-kec-{{ $form->kabupaten_kode ?? 'empty' }}">
+                                <x-tom-select id="edit_kecamatan" wire:model.live="form.kecamatan_kode" placeholder="{{ __('Pilih Kecamatan') }}"
+                                    :options="$districts->map(fn($d) => ['id' => $d->kode, 'name' => $d->nama])" />
+                             </div>
+                             <x-input-error for="form.kecamatan_kode" class="mt-2" />
+                        </div>
+                        <div>
+                             <x-label for="edit_kelurahan" value="{{ __('Kelurahan/Desa') }}" />
+                             <div class="mt-1" wire:key="edit-kel-{{ $form->kecamatan_kode ?? 'empty' }}">
+                                <x-tom-select id="edit_kelurahan" wire:model.live="form.kelurahan_kode" placeholder="{{ __('Pilih Kelurahan/Desa') }}"
+                                    :options="$villages->map(fn($v) => ['id' => $v->kode, 'name' => $v->nama])" />
+                             </div>
+                             <x-input-error for="form.kelurahan_kode" class="mt-2" />
+                        </div>
                     </div>
 
                     <!-- Address -->
@@ -404,14 +458,14 @@
                              <x-label for="edit_division" value="{{ __('Division') }}" />
                              <div class="mt-1">
                                 <x-tom-select id="edit_division" wire:model.live="form.division_id" placeholder="{{ __('Select Division') }}"
-                                    :options="App\Models\Division::all()->map(fn($d) => ['id' => $d->id, 'name' => $d->name])" />
+                                    :options="App\Models\Division::all()->map(fn($d) => ['id' => $d->id, 'name' => $d->name])->values()" />
                              </div>
                         </div>
                          <div>
                              <x-label for="edit_jobTitle" value="{{ __('Job Title') }}" />
                              <div class="mt-1" wire:key="edit-job-title-wrapper-{{ $form->division_id ?? 'all' }}">
                                 <x-tom-select id="edit_jobTitle" wire:model.live="form.job_title_id" placeholder="{{ __('Select Job Title') }}"
-                                    :options="$availableJobTitles->map(fn($j) => ['id' => $j->id, 'name' => $j->name])" />
+                                    :options="$availableJobTitles->map(fn($j) => ['id' => $j->id, 'name' => $j->name])->values()" />
                              </div>
                         </div>
                      </div>
@@ -514,10 +568,6 @@
                                  <div class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
                                      <span class="text-sm text-gray-600 dark:text-gray-300">Gender</span>
                                      <span class="text-sm font-medium text-gray-900 dark:text-white capitalize">{{ __($form->user->gender) }}</span>
-                                 </div>
-                                  <div class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-                                     <span class="text-sm text-gray-600 dark:text-gray-300">City</span>
-                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $form->user->city ?? '-' }}</span>
                                  </div>
                              </div>
                          </div>

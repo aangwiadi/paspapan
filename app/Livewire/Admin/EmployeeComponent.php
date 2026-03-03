@@ -98,6 +98,19 @@ class EmployeeComponent extends Component
         if ($property === 'form.division_id') {
             $this->form->job_title_id = null;
         }
+
+        if ($property === 'form.provinsi_kode') {
+            $this->form->kabupaten_kode = null;
+            $this->form->kecamatan_kode = null;
+            $this->form->kelurahan_kode = null;
+        }
+        if ($property === 'form.kabupaten_kode') {
+            $this->form->kecamatan_kode = null;
+            $this->form->kelurahan_kode = null;
+        }
+        if ($property === 'form.kecamatan_kode') {
+            $this->form->kelurahan_kode = null;
+        }
     }
 
     public function render()
@@ -111,9 +124,9 @@ class EmployeeComponent extends Component
                         ->orWhere('phone', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($this->division, fn (Builder $q) => $q->where('division_id', $this->division))
-            ->when($this->jobTitle, fn (Builder $q) => $q->where('job_title_id', $this->jobTitle))
-            ->when($this->education, fn (Builder $q) => $q->where('education_id', $this->education))
+            ->when($this->division, fn(Builder $q) => $q->where('division_id', $this->division))
+            ->when($this->jobTitle, fn(Builder $q) => $q->where('job_title_id', $this->jobTitle))
+            ->when($this->education, fn(Builder $q) => $q->where('education_id', $this->education))
             ->with(['division', 'jobTitle', 'education'])
             ->orderBy('name')
             ->paginate(20);
@@ -121,13 +134,22 @@ class EmployeeComponent extends Component
         $availableJobTitles = \App\Models\JobTitle::query()
             ->when($this->form->division_id, function ($q) {
                 $q->where('division_id', $this->form->division_id)
-                  ->orWhereNull('division_id'); // Include global titles if any
+                    ->orWhereNull('division_id'); // Include global titles if any
             })
             ->get();
+
+        $provinces = \App\Models\Wilayah::whereRaw('LENGTH(kode) = 2')->orderBy('nama')->get();
+        $regencies = $this->form->provinsi_kode ? \App\Models\Wilayah::where('kode', 'like', $this->form->provinsi_kode . '.%')->whereRaw('LENGTH(kode) = 5')->orderBy('nama')->get() : collect();
+        $districts = $this->form->kabupaten_kode ? \App\Models\Wilayah::where('kode', 'like', $this->form->kabupaten_kode . '.%')->whereRaw('LENGTH(kode) = 8')->orderBy('nama')->get() : collect();
+        $villages = $this->form->kecamatan_kode ? \App\Models\Wilayah::where('kode', 'like', $this->form->kecamatan_kode . '.%')->whereRaw('LENGTH(kode) = 13')->orderBy('nama')->get() : collect();
 
         return view('livewire.admin.employees', [
             'users' => $users,
             'availableJobTitles' => $availableJobTitles,
+            'provinces' => $provinces,
+            'regencies' => $regencies,
+            'districts' => $districts,
+            'villages' => $villages,
         ]);
     }
 }

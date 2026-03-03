@@ -63,12 +63,18 @@
                                     </div>
                                     <div>
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $advance->user->name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $advance->user->jobTitle->name ?? '-' }} (Rank {{ $advance->user->jobTitle->jobLevel->rank ?? '-' }})</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                            <span>{{ $advance->user->jobTitle->name ?? '-' }} (Rank {{ $advance->user->jobTitle->jobLevel->rank ?? '-' }})</span>
+                                            @if($advance->user->kabupaten)
+                                            <span class="text-gray-300 dark:text-gray-600">&bull;</span>
+                                            <span class="flex items-center gap-0.5"><x-heroicon-m-map-pin class="h-3 w-3" /> {{ $advance->user->kabupaten->nama }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                <div>{{ $advance->created_at->format('d M Y') }}</div>
+                                <div>{{ $advance->created_at->translatedFormat('d M Y') }}</div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 max-w-[200px] truncate">{{ $advance->purpose }}</div>
                             </td>
                             <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
@@ -83,22 +89,38 @@
                                                 @if($advance->status === 'approved') bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/50
                                                 @elseif($advance->status === 'paid') bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-500/50
                                                 @elseif($advance->status === 'rejected') bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-500/50
+                                                @elseif($advance->status === 'pending_finance') bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400 dark:ring-purple-500/50
                                                 @else bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400 dark:ring-yellow-500/50 @endif">
-                                        {{ __($advance->status === 'pending' ? 'Pending' : ($advance->status === 'approved' ? 'Approved' : ($advance->status === 'paid' ? 'Paid' : 'Rejected'))) }}
+                                        {{ __($advance->status === 'pending' ? 'Pending' : ($advance->status === 'pending_finance' ? 'Menunggu Finance' : ($advance->status === 'approved' ? 'Approved' : ($advance->status === 'paid' ? 'Paid' : 'Rejected')))) }}
                                     </span>
                                     @if($advance->status !== 'pending')
-                                    <span class="text-[10px] mt-1 text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                        </svg>
-                                        {{ $advance->approver->name ?? '-' }}
-                                    </span>
+                                    <div class="mt-1 flex flex-col gap-0.5">
+                                        @if($advance->head_approved_by)
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Head: {{ $advance->headApprover->name ?? '-' }}
+                                        </span>
+                                        @endif
+                                        @if($advance->finance_approved_by || $advance->approved_by)
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Finance: {{ $advance->financeApprover->name ?? $advance->approver->name ?? '-' }}
+                                        </span>
+                                        @endif
+                                    </div>
                                     @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    @if($advance->status === 'pending')
+                                    @php
+                                        $user = Auth::user();
+                                        $isFinanceHead = ($user->isAdmin || $user->isSuperadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
+                                        $canApprove = false;
+                                        if ($advance->status === 'pending') $canApprove = true;
+                                        if ($advance->status === 'pending_finance' && $isFinanceHead) $canApprove = true;
+                                    @endphp
+                                    @if($canApprove)
                                     <button wire:click="approve('{{ $advance->id }}')" wire:confirm="{{ __('Approve this request?') }}" class="text-gray-400 hover:text-green-600 transition-colors" title="{{ __('Approve') }}">
                                         <x-heroicon-m-check-circle class="h-6 w-6" />
                                     </button>
@@ -162,7 +184,13 @@
                                     </div>
                                     <div>
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->jobTitle->name ?? '-' }}</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex flex-col sm:flex-row sm:items-center sm:gap-1.5">
+                                            <span>{{ $user->jobTitle->name ?? '-' }}</span>
+                                            @if($user->kabupaten)
+                                            <span class="hidden sm:inline text-gray-300 dark:text-gray-600">&bull;</span>
+                                            <span class="flex items-center gap-0.5"><x-heroicon-m-map-pin class="h-3 w-3" /> {{ $user->kabupaten->nama }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -194,8 +222,8 @@
                                     @foreach($user->cashAdvances->sortByDesc('created_at')->take(3) as $hist)
                                     <li class="relative pl-4 border-l-2 @if($hist->status === 'paid') border-blue-400 @elseif($hist->status === 'approved') border-green-400 @elseif($hist->status === 'rejected') border-red-400 @else border-yellow-400 @endif pb-2 last:pb-0">
                                         <div class="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full @if($hist->status === 'paid') bg-blue-400 @elseif($hist->status === 'approved') bg-green-400 @elseif($hist->status === 'rejected') bg-red-400 @else bg-yellow-400 @endif ring-4 ring-white dark:ring-gray-800"></div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $hist->created_at->format('d M') }} ({{ \Carbon\Carbon::create()->month((int) $hist->payment_month)->englishMonth }} Deduction)</div>
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Rp {{ number_format($hist->amount, 0, ',', '.') }} <span class="text-xs font-normal text-gray-500">· {{ $hist->status }}</span></div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $hist->created_at->translatedFormat('d M') }} ({{ __('Deduction') }} {{ \Carbon\Carbon::create()->month((int) $hist->payment_month)->translatedFormat('F') }})</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Rp {{ number_format($hist->amount, 0, ',', '.') }} <span class="text-xs font-normal text-gray-500">· {{ __($hist->status === 'pending' ? 'Pending' : ($hist->status === 'approved' ? 'Approved' : ($hist->status === 'paid' ? 'Paid' : 'Rejected'))) }}</span></div>
                                     </li>
                                     @endforeach
                                 </ul>

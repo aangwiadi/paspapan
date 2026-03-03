@@ -38,13 +38,18 @@ class DatabaseSeeder extends Seeder
             }
             Education::create(['name' => $value]);
         }
+        $jobLevels = \App\Models\JobLevel::pluck('id', 'name')->toArray();
+
         foreach (JobTitleFactory::$jobTitles as $value) {
             if (JobTitle::where('name', $value)->exists()) {
                 continue;
             }
-            JobTitle::create(['name' => $value]);
+            JobTitle::create([
+                'name' => $value,
+                'job_level_id' => $jobLevels[$value] ?? null
+            ]);
         }
         Barcode::factory(1)->create(['name' => 'Barcode 1']);
-        Shift::factory(2)->create();
+        Shift::factory(3)->create();
     }
 }

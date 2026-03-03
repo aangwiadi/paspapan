@@ -56,8 +56,6 @@ class AttendanceFactory extends Factory
                 'time_out' => $time_out,
                 'status' => $late ? 'late' : 'present',
                 'shift_id' => $shift->id,
-                'latitude' => $barcode->latitude,
-                'longitude' => $barcode->longitude,
                 'note' => null,
             ];
         });

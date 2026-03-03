@@ -16,11 +16,14 @@ class ShiftFactory extends Factory
      */
     public function definition(): array
     {
-        $i = fake()->unique()->randomElement([0, 1]);
-        return [
-            'name' => ['Shift 1', 'Shift 2'][$i],
-            'start_time' => ['08:00', '19:00'][$i],
-            'end_time' => ['17:00', '02:00'][$i],
+        $i = fake()->unique()->randomElement([0, 1, 2]);
+
+        $shifts = [
+            ['name' => 'Shift Pagi', 'start_time' => '07:00', 'end_time' => '15:00'],
+            ['name' => 'Shift Sore', 'start_time' => '15:00', 'end_time' => '23:00'],
+            ['name' => 'Shift Malam', 'start_time' => '23:00', 'end_time' => '07:00'],
         ];
+
+        return $shifts[$i];
     }
 }

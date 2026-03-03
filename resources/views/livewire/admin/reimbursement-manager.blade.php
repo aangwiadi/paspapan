@@ -80,12 +80,36 @@
                                     <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset 
                                         @if($claim->status === 'approved') bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/50
                                         @elseif($claim->status === 'rejected') bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-500/50
+                                        @elseif($claim->status === 'pending_finance') bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400 dark:ring-purple-500/50
                                         @else bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400 dark:ring-yellow-500/50 @endif">
-                                        {{ __(ucfirst($claim->status)) }}
+                                        {{ __($claim->status === 'pending_finance' ? 'Menunggu Finance' : ucfirst($claim->status)) }}
                                     </span>
+                                    @if($claim->status !== 'pending')
+                                    <div class="mt-1 flex flex-col gap-0.5 w-[140px]">
+                                        @if($claim->head_approved_by)
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            <span class="truncate">Head: {{ $claim->headApprover->name ?? '-' }}</span>
+                                        </span>
+                                        @endif
+                                        @if($claim->finance_approved_by || $claim->approved_by)
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            <span class="truncate">Finance: {{ $claim->financeApprover->name ?? $claim->approvedBy->name ?? '-' }}</span>
+                                        </span>
+                                        @endif
+                                    </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    @if($claim->status === 'pending')
+                                    @php
+                                        $user = Auth::user();
+                                        $isFinanceHead = ($user->is_admin || $user->is_superadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
+                                        $canApprove = false;
+                                        if ($claim->status === 'pending') $canApprove = true;
+                                        if ($claim->status === 'pending_finance' && $isFinanceHead) $canApprove = true;
+                                    @endphp
+                                    @if($canApprove)
                                         <div class="flex justify-end gap-2">
                                             <button wire:click="approve('{{ $claim->id }}')" wire:confirm="{{ __('Approve this claim?') }}" class="text-gray-400 hover:text-green-600 transition-colors" title="{{ __('Approve') }}">
                                                 <x-heroicon-m-check-circle class="h-6 w-6" />

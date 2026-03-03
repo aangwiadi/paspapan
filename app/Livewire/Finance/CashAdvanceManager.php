@@ -37,19 +37,40 @@ class CashAdvanceManager extends Component
     {
         $advance = CashAdvance::find($id);
         if ($advance && $this->canManage($advance)) {
-            $advance->update([
-                'status' => 'approved',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-            ]);
+            $user = Auth::user();
+            $isFinanceHead = ($user->isAdmin || $user->isSuperadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
 
-            $advance->user->notify(new \App\Notifications\CashAdvanceUpdated($advance));
-            $advance->user->notify(new \App\Notifications\CashAdvanceUpdatedEmail($advance));
+            if ($isFinanceHead) {
+                // Final approval by Finance
+                $advance->update([
+                    'status' => 'approved',
+                    'finance_approved_by' => $user->id,
+                    'finance_approved_at' => now(),
+                    // fallback to keep old code happy
+                    'approved_by' => $user->id,
+                    'approved_at' => now(),
+                ]);
 
-            $this->dispatch('banner-message', [
-                'style' => 'success',
-                'message' => 'Kasbon disetujui.'
-            ]);
+                $advance->user->notify(new \App\Notifications\CashAdvanceUpdated($advance));
+                $advance->user->notify(new \App\Notifications\CashAdvanceUpdatedEmail($advance));
+
+                $this->dispatch('banner-message', [
+                    'style' => 'success',
+                    'message' => 'Kasbon disetujui sepenuhnya.'
+                ]);
+            } else {
+                // First layer approval by Division Head
+                $advance->update([
+                    'status' => 'pending_finance',
+                    'head_approved_by' => $user->id,
+                    'head_approved_at' => now(),
+                ]);
+
+                $this->dispatch('banner-message', [
+                    'style' => 'success',
+                    'message' => 'Kasbon disetujui, menunggu persetujuan Finance.'
+                ]);
+            }
         }
     }
 
@@ -57,11 +78,26 @@ class CashAdvanceManager extends Component
     {
         $advance = CashAdvance::find($id);
         if ($advance && $this->canManage($advance)) {
+            $user = Auth::user();
+            $isFinanceHead = ($user->isAdmin || $user->isSuperadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
+
             $advance->update([
                 'status' => 'rejected',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
             ]);
+
+            if ($isFinanceHead) {
+                $advance->update([
+                    'finance_approved_by' => $user->id,
+                    'finance_approved_at' => now(),
+                    'approved_by' => $user->id,
+                    'approved_at' => now(),
+                ]);
+            } else {
+                $advance->update([
+                    'head_approved_by' => $user->id,
+                    'head_approved_at' => now(),
+                ]);
+            }
 
             $advance->user->notify(new \App\Notifications\CashAdvanceUpdated($advance));
             $advance->user->notify(new \App\Notifications\CashAdvanceUpdatedEmail($advance));
@@ -96,10 +132,35 @@ class CashAdvanceManager extends Component
         if ($user->isAdmin || $user->isSuperadmin) return true;
 
         $myRank = $user->jobTitle?->jobLevel?->rank;
+        $myDivisionId = $user->division_id;
+
         if (!$myRank || $myRank > 2) return false;
 
-        $targetRank = $advance->user->jobTitle?->jobLevel?->rank;
-        return $targetRank && $myRank < $targetRank;
+        $isFinanceHead = ($myRank <= 2 && $user->division && strtolower($user->division->name) === 'finance');
+
+        if ($isFinanceHead) {
+            // Finance head can manage if pending_finance, OR if it's from their own subordinate (e.g. pending)
+            if ($advance->status === 'pending_finance') {
+                return true;
+            }
+            if (
+                $advance->user->division_id === $myDivisionId &&
+                $advance->user->jobTitle?->jobLevel?->rank > $myRank
+            ) {
+                return true;
+            }
+        } else {
+            // Division head can only manage their own subordinates when it's pending
+            if (
+                $advance->user->division_id === $myDivisionId &&
+                $advance->user->jobTitle?->jobLevel?->rank > $myRank &&
+                $advance->status === 'pending'
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function render()
@@ -107,7 +168,7 @@ class CashAdvanceManager extends Component
         $user = Auth::user();
 
         if ($this->activeTab === 'requests') {
-            $query = CashAdvance::with(['user.jobTitle.jobLevel', 'approver']);
+            $query = CashAdvance::with(['user.jobTitle.jobLevel', 'user.kabupaten', 'approver', 'headApprover', 'financeApprover']);
 
             if ($this->statusFilter !== 'all') {
                 $query->where('status', $this->statusFilter);
@@ -121,10 +182,31 @@ class CashAdvanceManager extends Component
 
             if (!$user->isAdmin && !$user->isSuperadmin) {
                 $myRank = $user->jobTitle?->jobLevel?->rank;
+                $myDivisionId = $user->division_id;
+
                 if ($myRank && $myRank <= 2) {
-                    $query->whereHas('user.jobTitle.jobLevel', function ($q) use ($myRank) {
-                        $q->where('rank', '>', $myRank);
-                    });
+                    $isFinanceHead = ($user->division && strtolower($user->division->name) === 'finance');
+
+                    if ($isFinanceHead) {
+                        // See pending_finance globally, or any request from own division subordinates
+                        $query->where(function ($q) use ($myRank, $myDivisionId) {
+                            $q->where('status', 'pending_finance')
+                                ->orWhereHas('user', function ($uq) use ($myRank, $myDivisionId) {
+                                    $uq->where('division_id', $myDivisionId)
+                                        ->whereHas('jobTitle.jobLevel', function ($lq) use ($myRank) {
+                                            $lq->where('rank', '>', $myRank);
+                                        });
+                                });
+                        });
+                    } else {
+                        // See only requests from own division subordinates
+                        $query->whereHas('user', function ($uq) use ($myRank, $myDivisionId) {
+                            $uq->where('division_id', $myDivisionId)
+                                ->whereHas('jobTitle.jobLevel', function ($lq) use ($myRank) {
+                                    $lq->where('rank', '>', $myRank);
+                                });
+                        });
+                    }
                 } else {
                     $query->where('id', 0);
                 }
@@ -136,9 +218,9 @@ class CashAdvanceManager extends Component
             ])->layout('layouts.app');
         } else {
             // "users" tab (Grouped by User and Month)
-            $query = User::with(['jobTitle', 'cashAdvances' => function ($q) {
+            $query = User::with(['jobTitle', 'kabupaten', 'cashAdvances' => function ($q) {
                 // only count approved or paid kasbons for the summary
-                $q->whereIn('status', ['approved', 'paid', 'pending', 'rejected']);
+                $q->whereIn('status', ['approved', 'paid', 'pending', 'rejected', 'pending_finance']);
             }])->whereHas('cashAdvances');
 
             if ($this->search) {

@@ -26,49 +26,86 @@ class ReimbursementManager extends Component
     public function approve($id)
     {
         $reimbursement = Reimbursement::findOrFail($id);
+        $user = auth()->user();
+        $isFinanceHead = ($user->is_admin || $user->is_superadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
 
         // Auth Check
-        $user = auth()->user();
         if (!$user->is_admin && !$user->is_superadmin) {
-            if (!$user->subordinates->contains('id', $reimbursement->user_id)) {
+            $isSubordinate = $user->subordinates->contains('id', $reimbursement->user_id);
+            if (!$isSubordinate && !($isFinanceHead && $reimbursement->status === 'pending_finance')) {
                 abort(403, 'Unauthorized action.');
             }
         }
 
-        $reimbursement->update(['status' => 'approved']);
-        
+        if ($isFinanceHead) {
+            $reimbursement->update([
+                'status' => 'approved',
+                'finance_approved_by' => $user->id,
+                'finance_approved_at' => now(),
+                'approved_by' => $user->id
+            ]);
+        } else {
+            $reimbursement->update([
+                'status' => 'pending_finance',
+                'head_approved_by' => $user->id,
+                'head_approved_at' => now(),
+            ]);
+        }
+
         $reimbursement->user->notify(new \App\Notifications\ReimbursementStatusUpdated($reimbursement));
-        
-        $this->dispatch('saved'); 
+        $this->dispatch('saved');
     }
 
     public function reject($id)
     {
         $reimbursement = Reimbursement::findOrFail($id);
-        
-        // Auth Check
         $user = auth()->user();
+        $isFinanceHead = ($user->is_admin || $user->is_superadmin || ($user->jobTitle?->jobLevel?->rank <= 2 && $user->division && strtolower($user->division->name) === 'finance'));
+
+        // Auth Check
         if (!$user->is_admin && !$user->is_superadmin) {
-            if (!$user->subordinates->contains('id', $reimbursement->user_id)) {
+            $isSubordinate = $user->subordinates->contains('id', $reimbursement->user_id);
+            if (!$isSubordinate && !($isFinanceHead && $reimbursement->status === 'pending_finance')) {
                 abort(403, 'Unauthorized action.');
             }
         }
 
         $reimbursement->update(['status' => 'rejected']);
-        
+
+        if ($isFinanceHead) {
+            $reimbursement->update([
+                'finance_approved_by' => $user->id,
+                'finance_approved_at' => now(),
+                'approved_by' => $user->id // fallback
+            ]);
+        } else {
+            $reimbursement->update([
+                'head_approved_by' => $user->id,
+                'head_approved_at' => now(),
+            ]);
+        }
+
         $reimbursement->user->notify(new \App\Notifications\ReimbursementStatusUpdated($reimbursement));
-        
         $this->dispatch('saved');
     }
 
     public function render()
     {
         $user = auth()->user();
-        
+        $myRank = $user->jobTitle?->jobLevel?->rank;
+        $isFinanceHead = ($myRank && $myRank <= 2 && $user->division && strtolower($user->division->name) === 'finance');
+
         $reimbursements = Reimbursement::query()
-            ->with('user')
-            ->when(!$user->is_admin && !$user->is_superadmin, function ($q) use ($user) {
-                 return $q->whereIn('user_id', $user->subordinates->pluck('id'));
+            ->with(['user', 'approvedBy', 'headApprover', 'financeApprover'])
+            ->when(!$user->is_admin && !$user->is_superadmin, function ($q) use ($user, $isFinanceHead) {
+                if ($isFinanceHead) {
+                    return $q->where(function ($qq) use ($user) {
+                        $qq->where('status', 'pending_finance')
+                            ->orWhereIn('user_id', $user->subordinates->pluck('id'));
+                    });
+                } else {
+                    return $q->whereIn('user_id', $user->subordinates->pluck('id'));
+                }
             })
             ->when($this->statusFilter, function ($query) {
                 return $query->where('status', $this->statusFilter);

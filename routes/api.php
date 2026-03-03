@@ -3,10 +3,19 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CapacitorDataController;
+use App\Http\Controllers\Api\WilayahController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware(['auth:sanctum', 'throttle:api']);
+
+// Wilayah Data Endpoints
+Route::prefix('wilayah')->group(function () {
+    Route::get('/provinces', [WilayahController::class, 'provinces']);
+    Route::get('/regencies/{provinceCode}', [WilayahController::class, 'regencies']);
+    Route::get('/districts/{regencyCode}', [WilayahController::class, 'districts']);
+    Route::get('/villages/{districtCode}', [WilayahController::class, 'villages']);
+});
 
 // Capacitor Device API Routes
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('device')->group(function () {

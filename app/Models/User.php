@@ -37,7 +37,10 @@ class User extends Authenticatable
         'birth_date',
         'birth_place',
         'address',
-        'city',
+        'provinsi_kode',
+        'kabupaten_kode',
+        'kecamatan_kode',
+        'kelurahan_kode',
         'education_id',
         'division_id',
         'job_title_id',
@@ -221,5 +224,25 @@ class User extends Authenticatable
     public function cashAdvances()
     {
         return $this->hasMany(CashAdvance::class);
+    }
+
+    public function provinsi()
+    {
+        return $this->belongsTo(Wilayah::class, 'provinsi_kode', 'kode');
+    }
+
+    public function kabupaten()
+    {
+        return $this->belongsTo(Wilayah::class, 'kabupaten_kode', 'kode');
+    }
+
+    public function kecamatan()
+    {
+        return $this->belongsTo(Wilayah::class, 'kecamatan_kode', 'kode');
+    }
+
+    public function kelurahan()
+    {
+        return $this->belongsTo(Wilayah::class, 'kelurahan_kode', 'kode');
     }
 }

@@ -14,12 +14,13 @@ return new class extends Migration
     public function up(): void
     {
         // Delete old demo user
-        User::where('email', 'admin.demo@pandanteknik.com')->forceDelete();
+        \Illuminate\Support\Facades\DB::table('users')->where('email', 'admin.demo@pandanteknik.com')->delete();
 
         // Create new Demo Admin
-        User::firstOrCreate(
+        \Illuminate\Support\Facades\DB::table('users')->updateOrInsert(
             ['email' => 'admin123@paspapan.com'],
             [
+                'id' => (string) str(\Illuminate\Support\Str::ulid())->lower(),
                 'name' => 'Demo Admin',
                 'password' => Hash::make('12345678'),
                 'group' => 'admin',
@@ -27,13 +28,16 @@ return new class extends Migration
                 'phone' => '081234567801',
                 'address' => 'Demo Address Admin',
                 'city' => 'Jakarta',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         );
 
         // Create new Demo User
-        User::firstOrCreate(
+        \Illuminate\Support\Facades\DB::table('users')->updateOrInsert(
             ['email' => 'user123@paspapan.com'],
             [
+                'id' => (string) str(\Illuminate\Support\Str::ulid())->lower(),
                 'name' => 'Demo User',
                 'password' => Hash::make('12345678'),
                 'group' => 'user',
@@ -41,6 +45,8 @@ return new class extends Migration
                 'phone' => '081234567802',
                 'address' => 'Demo Address User',
                 'city' => 'Jakarta',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         );
     }
@@ -50,6 +56,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        User::whereIn('email', ['admin123@paspapan.com', 'user123@paspapan.com'])->forceDelete();
+        \Illuminate\Support\Facades\DB::table('users')->whereIn('email', ['admin123@paspapan.com', 'user123@paspapan.com'])->delete();
     }
 };

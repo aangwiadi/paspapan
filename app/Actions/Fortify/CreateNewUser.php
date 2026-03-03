@@ -26,7 +26,10 @@ class CreateNewUser implements CreatesNewUsers
             'phone' => ['required', 'string', 'max:64', 'unique:users'],
             'gender' => ['required', 'string', 'in:male,female'],
             'address' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:255'],
+            'provinsi_kode' => ['required', 'string', 'max:13'],
+            'kabupaten_kode' => ['required', 'string', 'max:13'],
+            'kecamatan_kode' => ['required', 'string', 'max:13'],
+            'kelurahan_kode' => ['required', 'string', 'max:13'],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
@@ -38,7 +41,10 @@ class CreateNewUser implements CreatesNewUsers
             'phone' => $input['phone'],
             'gender' => $input['gender'],
             'address' => $input['address'],
-            'city' => $input['city'],
+            'provinsi_kode' => $input['provinsi_kode'],
+            'kabupaten_kode' => $input['kabupaten_kode'],
+            'kecamatan_kode' => $input['kecamatan_kode'],
+            'kelurahan_kode' => $input['kelurahan_kode'],
             'password' => Hash::make($input['password']),
         ]);
     }

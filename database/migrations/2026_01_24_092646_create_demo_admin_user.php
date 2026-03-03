@@ -11,17 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \App\Models\User::firstOrCreate([
-            'email' => 'admin.demo@pandanteknik.com',
-        ], [
-            'name' => 'Demo Admin',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'group' => 'admin',
-            'email_verified_at' => now(),
-            'phone' => '081234567890',
-            'address' => 'Demo Address, Jakarta',
-            'city' => 'Jakarta',
-        ]);
+        \Illuminate\Support\Facades\DB::table('users')->updateOrInsert(
+            ['email' => 'admin.demo@pandanteknik.com'],
+            [
+                'id' => (string) str(\Illuminate\Support\Str::ulid())->lower(),
+                'name' => 'Demo Admin',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'group' => 'admin',
+                'email_verified_at' => now(),
+                'phone' => '081234567890',
+                'address' => 'Demo Address, Jakarta',
+                'city' => 'Jakarta',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
     }
 
     /**
@@ -29,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        \App\Models\User::where('email', 'admin.demo@pandanteknik.com')->delete();
+        \Illuminate\Support\Facades\DB::table('users')->where('email', 'admin.demo@pandanteknik.com')->delete();
     }
 };

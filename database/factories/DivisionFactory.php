@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class DivisionFactory extends Factory
 {
-    static $divisions = ['Divisi 1', 'Divisi 2', 'Divisi 3', 'Divisi 4'];
+    static $divisions = ['Finance', 'HR', 'IT', 'Operations', 'Marketing'];
 
     /**
      * Define the model's default state.
