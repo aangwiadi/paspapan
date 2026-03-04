@@ -85,11 +85,12 @@ Whether your team is in the office, on the field, or working from home, PasPapan
 - **Kasbon (Cash Advance)**: Full lifecycle management — request with limit validation (max = basic salary), approval flow, auto-deduction from payslip with individual dates, and summary dashboard showing unpaid/paid totals.
 
 ### 🚀 Enterprise-Grade Platform
-- **Real-Time Analytics**: Make data-driven decisions with a powerful dashboard tracking attendance trends and anomalies.
+- **Real-Time Analytics**: Make data-driven decisions with a powerful dashboard tracking attendance trends, anomalies, and **interactive geographical employee distribution maps**.
 - **Native Mobile Experience**: A lightning-fast, offline-capable app for Android & iOS (via PWA).
 - **Global Ready**: Multi-language support (English & Indonesian) for diverse teams.
 
 ### ✨ What's New
+- **Employee Origins Map**: Interactive Leaflet.js map with **MarkerCluster** on the Analytics Dashboard — visualizes employee geographical distribution by province. Zoom out to see aggregated cluster counts, zoom in to see individual employees scatter across regions.
 - **Double-Layered Approval Workflow**: Advanced multi-tier request approvals for Kasbon and Reimbursements, routing sequentially from Division Head to Finance Head.
 - **Dynamic Structural Seeding**: Built-in accurate corporate hierarchies right out of the box (Divisions, Levels, automated Job Titles mapping, and standardized 3-Shift rotas).
 - **Multi-Region & Localization Support**: Refined UI bindings for Regional (`Wilayah`) mapping and fully togglable ID/EN translations throughout the admin panels.

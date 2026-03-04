@@ -85,11 +85,12 @@ Baik tim Anda bekerja di kantor, di lapangan, atau dari rumah, PasPapan memastik
 - **Kasbon (Cash Advance)**: Manajemen siklus lengkap — pengajuan dengan validasi limit (maks = gaji pokok), alur persetujuan, potongan otomatis dari slip gaji beserta tanggal, dan dashboard ringkasan (belum terbayar/sudah dibayar).
 
 ### 🚀 Platform Skala Enterprise
-- **Analitik Real-Time**: Buat keputusan berbasis data dengan dashboard canggih yang melacak tren kehadiran dan anomali.
+- **Analitik Real-Time**: Buat keputusan berbasis data dengan dashboard canggih yang melacak tren kehadiran, anomali, dan **peta distribusi geografis karyawan yang interaktif**.
 - **Pengalaman Mobile Native**: Aplikasi super cepat dan bisa offline untuk Android & iOS (via PWA).
 - **Siap Global**: Dukungan multi-bahasa (Inggris & Indonesia) untuk tim yang beragam.
 
 ### ✨ Apa yang Baru
+- **Peta Asal Karyawan (Employee Origins Map)**: Peta interaktif Leaflet.js dengan **MarkerCluster** di Dashboard Analitik — menampilkan sebaran geografis karyawan per provinsi. Zoom out untuk melihat total cluster, zoom in untuk melihat titik-titik karyawan menyebar di seluruh wilayah.
 - **Alur Persetujuan Berlapis (Double Approval)**: Permintaan Kasbon dan Reimbursement kini disetujui secara otomatis & berjenjang dari Kepala Divisi (Head) lalu diteruskan ke Kepala Keuangan (Finance).
 - **Struktur Perusahaan Realistis**: Seeder pabrikan yang langsung menggenerate 5 Divisi Utama secara dinamis lengkap dengan jenjang karir (Head, Manager, Senior, Staff) dan 3 Shift kerja (Pagi, Sore, Malam).
 - **Dukungan Multi-Wilayah & Bahasa**: Pembaruan menyeluruh pada UI admin untuk mendukung pengelolaan Regional (Wilayah) dan penyesuaian bahasa ganda (ID/EN) yang dinamis.
