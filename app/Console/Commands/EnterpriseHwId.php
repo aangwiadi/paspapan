@@ -30,7 +30,7 @@ class EnterpriseHwId extends Command
         
         $this->info("========================================");
         $this->info("Your Server Hardware ID is:");
-        $this->line("<options=bold,fg=green>{$hwid}</>");
+        $this->line("<fg=green;options=bold>{$hwid}</>");
         $this->info("========================================");
         $this->line("Please copy this ID and give it to the author to receive your Enterprise License.");
     }
