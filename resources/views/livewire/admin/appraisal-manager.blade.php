@@ -1,73 +1,75 @@
 <div class="py-12">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center mb-6">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h2 class="text-2xl font-bold font-outfit text-gray-800 dark:text-white">Performance Appraisals</h2>
-                <p class="text-sm text-gray-500 mt-1">Evaluate staff KPIs and attendance scores</p>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+                    {{ __('Performance Appraisals') }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('Evaluate staff KPIs and attendance scores.') }}
+                </p>
             </div>
         </div>
 
         <!-- Filters -->
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Employee</label>
-                <div class="relative">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Name or NIP..." 
-                        class="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-white transition-shadow">
-                    <div class="absolute left-3 top-2.5 text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </div>
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Search -->
+            <div class="relative col-span-1 sm:col-span-2 lg:col-span-2">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <x-heroicon-m-magnifying-glass class="h-5 w-5 text-gray-400" />
                 </div>
+                <input wire:model.live.debounce.300ms="search" type="text" 
+                    placeholder="{{ __('Search name, NIP...') }}" 
+                    class="block w-full rounded-lg border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-gray-800 dark:text-white dark:ring-gray-700 sm:text-sm sm:leading-6">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Month</label>
-                <select wire:model.live="month" class="w-full rounded-lg border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:ring-primary-500 focus:border-primary-500">
+            <!-- Month Filter -->
+            <div class="col-span-1">
+                <select wire:model.live="month" class="block w-full rounded-lg border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-gray-800 dark:text-white dark:ring-gray-700 sm:text-sm sm:leading-6">
                     @for($i = 1; $i <= 12; $i++)
                         <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
                     @endfor
                 </select>
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Year</label>
-                <select wire:model.live="year" class="w-full rounded-lg border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:ring-primary-500 focus:border-primary-500">
+            <!-- Year Filter -->
+            <div class="col-span-1">
+                <select wire:model.live="year" class="block w-full rounded-lg border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-gray-800 dark:text-white dark:ring-gray-700 sm:text-sm sm:leading-6">
                     @for($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
                         <option value="{{ $i }}">{{ $i }}</option>
                     @endfor
                 </select>
             </div>
         </div>
-    </div>
 
-    <!-- Table -->
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full whitespace-nowrap">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-slate-700 border-b border-gray-100 dark:border-slate-600 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        <th class="px-6 py-4">Employee</th>
-                        <th class="px-6 py-4">Department</th>
-                        <th class="px-6 py-4 text-center">Attendance Score</th>
-                        <th class="px-6 py-4 text-center">Subjective Score</th>
-                        <th class="px-6 py-4 text-center">Final Score</th>
-                        <th class="px-6 py-4 text-right">Action</th>
+    <!-- Content -->
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <!-- Desktop Table -->
+        <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full whitespace-nowrap text-left text-sm">
+                <thead class="bg-gray-50 text-gray-500 dark:bg-gray-700/50 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-medium">{{ __('Employee') }}</th>
+                        <th scope="col" class="px-6 py-4 font-medium">{{ __('Department') }}</th>
+                        <th scope="col" class="px-6 py-4 text-center font-medium">{{ __('Attendance Score') }}</th>
+                        <th scope="col" class="px-6 py-4 text-center font-medium">{{ __('Subjective Score') }}</th>
+                        <th scope="col" class="px-6 py-4 text-center font-medium">{{ __('Final Score') }}</th>
+                        <th scope="col" class="px-6 py-4 text-right font-medium">{{ __('Action') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse($users as $user)
                         @php
                             $eval = $appraisals[$user->id] ?? null;
                         @endphp
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                        <tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 flex-shrink-0">
-                                        <img class="h-10 w-10 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm"
-                                            src="{{ $user->profile_photo_url }}" alt="">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
+                                        <img class="h-full w-full object-cover" src="{{ $user->profile_photo_url }}" alt="">
                                     </div>
-                                    <div class="ml-4">
+                                    <div>
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
                                         <div class="text-xs text-gray-500">{{ $user->nip ?? 'No NIP' }}</div>
                                     </div>
@@ -105,10 +107,16 @@
                                     <span class="text-gray-400 text-sm">Pending</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right text-sm font-medium">
-                                <button wire:click="evaluate({{ $user->id }})" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                    {{ $eval ? 'Update' : 'Evaluate' }}
-                                </button>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button wire:click="evaluate({{ $user->id }})" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ $eval ? 'Update Evaluation' : 'Evaluate' }}">
+                                        @if($eval)
+                                            <x-heroicon-m-pencil-square class="h-5 w-5" />
+                                        @else
+                                            <x-heroicon-m-clipboard-document-check class="h-5 w-5" />
+                                        @endif
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
