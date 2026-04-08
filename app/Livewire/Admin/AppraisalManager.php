@@ -7,9 +7,11 @@ use App\Models\Attendance;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('layouts.app')]
 class AppraisalManager extends Component
 {
     use WithPagination;
