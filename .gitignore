@@ -26,5 +26,4 @@ yarn-error.log
 !update.sh
 *.zip
 server.php
-
 *.Source.php
