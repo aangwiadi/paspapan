@@ -26,20 +26,12 @@
             
             <!-- Month Filter -->
             <div class="col-span-1">
-                <select wire:model.live="month" class="block w-full rounded-lg border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-gray-800 dark:text-white dark:ring-gray-700 sm:text-sm sm:leading-6">
-                    @for($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
-                    @endfor
-                </select>
+                <x-tom-select id="filter_month" wire:model.live="month" placeholder="{{ __('Select Month') }}" :options="$months" />
             </div>
             
             <!-- Year Filter -->
             <div class="col-span-1">
-                <select wire:model.live="year" class="block w-full rounded-lg border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-gray-800 dark:text-white dark:ring-gray-700 sm:text-sm sm:leading-6">
-                    @for($i = date('Y') - 2; $i <= date('Y') + 1; $i++)
-                        <option value="{{ $i }}">{{ $i }}</option>
-                    @endfor
-                </select>
+                <x-tom-select id="filter_year" wire:model.live="year" placeholder="{{ __('Select Year') }}" :options="$years" />
             </div>
         </div>
 
@@ -104,7 +96,7 @@
                                         {{ $eval->final_score }}
                                     </div>
                                 @else
-                                    <span class="text-gray-400 text-sm">Pending</span>
+                                    <span class="text-gray-400 text-sm">{{ __('Pending') }}</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right">
@@ -124,7 +116,7 @@
                             <td colspan="6" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-clipboard-list text-4xl mb-3 text-gray-300"></i>
-                                    <p>No employees found for evaluation.</p>
+                                    <p>{{ __('No employees found for evaluation.') }}</p>
                                 </div>
                             </td>
                         </tr>
@@ -138,66 +130,60 @@
     </div>
 
     <!-- Evaluation Modal -->
-    @if($showModal && $evaluatingUser)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm shadow-xl" aria-hidden="true" wire:click="$set('showModal', false)"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 border border-gray-100 dark:border-slate-700">
-                    <div>
-                        <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                            <h3 class="text-lg leading-6 font-bold text-gray-900 dark:text-white" id="modal-title">
-                                Evaluate: {{ $evaluatingUser->name }}
-                            </h3>
-                            <div class="mt-2 text-sm text-gray-500 mb-4">
-                                Period: {{ date('F', mktime(0, 0, 0, $month, 10)) }} {{ $year }}
-                            </div>
+    <x-dialog-modal wire:model.live="showModal">
+        <x-slot name="title">
+            {{ __('Evaluate') }}: {{ $evaluatingUser ? $evaluatingUser->name : '' }}
+        </x-slot>
 
-                            <form wire:submit.prevent="save">
-                                <div class="space-y-4">
-                                    <!-- Auto Calculated Attendance Score -->
-                                    <div class="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg flex justify-between items-center border border-gray-100 dark:border-slate-600">
-                                        <div>
-                                            <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">System Attendance Score</span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">Weight: 40%</span>
-                                        </div>
-                                        <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                                            {{ $attendanceScore }}
-                                        </div>
-                                    </div>
+        <x-slot name="content">
+            @if($evaluatingUser)
+            <div class="text-sm text-gray-500 mb-4">
+                {{ __('Period') }}: {{ __(date('F', mktime(0, 0, 0, $month, 10))) }} {{ $year }}
+            </div>
 
-                                    <!-- Subjective Component -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manager Subjective Score (0-100)</label>
-                                        <div class="mt-1 flex items-center justify-between">
-                                            <input type="range" wire:model.live="subjectiveScore" min="0" max="100" class="w-full mr-4 accent-primary-600">
-                                            <input type="number" wire:model.live="subjectiveScore" class="w-20 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-slate-700 dark:text-white">
-                                        </div>
-                                        <p class="mt-1 text-xs text-gray-500">Weight: 60%. Based on soft skills, teamwork, and task completion.</p>
-                                        @error('subjectiveScore') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                    </div>
-
-                                    <!-- Notes -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Evaluation Notes</label>
-                                        <textarea wire:model="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-slate-700 dark:text-white" placeholder="Provide feedback or justification..."></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="mt-6 sm:flex sm:flex-row-reverse space-y-3 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
-                                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:w-auto sm:text-sm transition-colors">
-                                        Save Evaluation
-                                    </button>
-                                    <button type="button" wire:click="$set('showModal', false)" class="w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-transparent text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:w-auto sm:text-sm transition-colors">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
+            <form wire:submit.prevent="save" id="evalForm">
+                <div class="space-y-4">
+                    <!-- Auto Calculated Attendance Score -->
+                    <div class="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg flex justify-between items-center border border-gray-100 dark:border-slate-600">
+                        <div>
+                            <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('System Attendance Score') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('Weight') }}: 40%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                            {{ $attendanceScore }}
                         </div>
                     </div>
+
+                    <!-- Subjective Component -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Manager Subjective Score (0-100)') }}</label>
+                        <div class="mt-1 flex items-center justify-between">
+                            <input type="range" wire:model.live="subjectiveScore" min="0" max="100" class="w-full mr-4 accent-primary-600">
+                            <input type="number" wire:model.live="subjectiveScore" class="w-20 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-slate-700 dark:text-white">
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">{{ __('Weight: 60%. Based on soft skills, teamwork, and task completion.') }}</p>
+                        @error('subjectiveScore') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Evaluation Notes') }}</label>
+                        <textarea wire:model="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-slate-700 dark:text-white" placeholder="{{ __('Provide feedback or justification...') }}"></textarea>
+                    </div>
                 </div>
-            </div>
-        </div>
-        @endif
+            </form>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('showModal', false)" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ml-3" form="evalForm" type="submit" wire:loading.attr="disabled">
+                {{ __('Save Evaluation') }}
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
     </div>
 </div> 

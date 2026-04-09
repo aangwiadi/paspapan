@@ -139,9 +139,9 @@ class AppraisalManager extends Component
             ->get()
             ->keyBy('user_id');
 
-        return view('livewire.admin.appraisal-manager', [
-            'users' => $users,
-            'appraisals' => $appraisals
-        ]);
+        $months = collect(range(1, 12))->map(fn($i) => ['id' => (string)$i, 'name' => __(date('F', mktime(0, 0, 0, $i, 10)))])->values()->all();
+        $years = collect(range(date('Y') - 2, date('Y') + 1))->map(fn($i) => ['id' => (string)$i, 'name' => (string)$i])->values()->all();
+
+        return view('livewire.admin.appraisal-manager', compact('users', 'appraisals', 'months', 'years'));
     }
 }
