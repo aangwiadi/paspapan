@@ -127,6 +127,30 @@
     </a>
     @endif
 
+    {{-- 9. My Assets --}}
+    @if(\App\Helpers\Editions::assetLocked())
+    <button type="button" @click.prevent="$dispatch('feature-lock', { title: '{{ __('Assets Locked') }}', message: '{{ __('Company Asset Management is an Enterprise Feature') }} 🔒. {{ __('Please Upgrade.') }}' })" class="flex flex-col items-center gap-2 group w-full">
+        <div class="w-12 h-12 rounded-2xl bg-stone-50 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 relative">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z"></path>
+            </svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center border border-white dark:border-gray-800">
+                <span class="text-[10px]">🔒</span>
+            </span>
+        </div>
+        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-300 text-center leading-tight">{{ __('My Assets') }}</span>
+    </button>
+    @else
+    <a href="{{ route('my-assets') }}" class="flex flex-col items-center gap-2 group">
+        <div class="w-12 h-12 rounded-2xl bg-stone-50 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z"></path>
+            </svg>
+        </div>
+        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-300 text-center leading-tight">{{ __('My Assets') }}</span>
+    </a>
+    @endif
+
     {{-- 9. Team Kasbon --}}
     @if(Auth::user()->subordinates->isNotEmpty())
     @if(\App\Helpers\Editions::payrollLocked())

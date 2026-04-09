@@ -211,10 +211,6 @@
                         {{ __('Team Approvals') }}
                     </x-nav-link>
                     @endif
-
-                    <x-nav-link href="{{ route('my-assets') }}" :active="request()->routeIs('my-assets')" wire:navigate>
-                        {{ __('My Assets') }}
-                    </x-nav-link>
                     @endif
                 </div>
             </div>
