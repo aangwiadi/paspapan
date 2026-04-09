@@ -34,9 +34,9 @@
         show = true;
         title = $event.detail.title || 'Enterprise Feature 🔒';
         message = $event.detail.message || 'This feature is available in the Enterprise Edition.';
-        nama = '{{ Auth::user()->name ?? '' }}';
-        email = '{{ Auth::user()->email ?? '' }}';
-        perusahaan = '{{ \App\Models\Setting::getValue('app.company_name') ?? '' }}';
+        nama = '';
+        email = '';
+        perusahaan = '';
         whatsapp = '';
         jumlahKaryawan = '';
         catatan = '';
@@ -104,17 +104,10 @@
                     <input x-model="perusahaan" type="text" placeholder="{{ __('PT / CV / Organization') }}" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5">
                 </div>
 
-            <div class="grid grid-cols-2 gap-3">
                 {{-- WhatsApp --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">{{ __('WhatsApp Number') }} <span class="text-red-500">*</span></label>
                     <input x-model="whatsapp" type="tel" required placeholder="08xxxxxxxxxx" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5">
-                </div>
-
-                {{-- Jumlah Karyawan --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">{{ __('Number of Employees') }}</label>
-                    <input x-model="jumlahKaryawan" type="number" placeholder="50" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5">
                 </div>
             </div>
 
@@ -125,11 +118,17 @@
                     <input x-model="domain" type="text" placeholder="example.com" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5">
                 </div>
 
-                {{-- HWID (readonly) --}}
+                {{-- Jumlah Karyawan --}}
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">{{ __('Server HWID') }}</label>
-                    <input x-model="hwid" type="text" readonly class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-mono">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">{{ __('Number of Employees') }}</label>
+                    <input x-model="jumlahKaryawan" type="number" placeholder="50" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5">
                 </div>
+            </div>
+
+            {{-- HWID (readonly, full width) --}}
+            <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">{{ __('Server HWID') }}</label>
+                <input x-model="hwid" type="text" readonly class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs dark:bg-gray-700 dark:text-white py-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-mono">
             </div>
 
             {{-- Catatan --}}
