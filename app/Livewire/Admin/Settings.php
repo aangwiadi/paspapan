@@ -34,9 +34,9 @@ class Settings extends Component
             $setting->update(['value' => $value]);
             Cache::forget("setting.{$setting->key}");
 
-            // Vital: Clear Enterprise License Cache if Company Name or Key changes
+            // Vital: Clear Enterprise License Cache if Company Name, Email, or Key changes
             if (in_array($setting->key, ['app.company_name', 'app.support_contact', 'enterprise_license_key'])) {
-                Cache::forget('enterprise_license_valid');
+                \App\Services\Enterprise\LicenseGuard::clearLicenseCache();
             }
 
             $this->dispatch('saved'); // For sweetalert or notification
