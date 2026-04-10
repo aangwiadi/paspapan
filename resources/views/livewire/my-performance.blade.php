@@ -57,7 +57,7 @@
                                     <span class="text-xs text-gray-400">{{ __('Not Scheduled') }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                 @if($appraisal->status === 'self_assessment')
                                     <button wire:click="openSelfAssessment({{ $appraisal->id }})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                         {{ __('Fill Assessment') }}
@@ -66,8 +66,11 @@
                                     <button wire:click="acknowledge({{ $appraisal->id }})" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
                                         {{ __('Acknowledge') }}
                                     </button>
-                                @else
-                                    <span class="text-gray-400">{{ __('View Only') }}</span>
+                                @endif
+                                @if($appraisal->status === 'completed')
+                                    <a href="{{ route('appraisal.export-pdf', $appraisal) }}" class="inline-flex items-center gap-1 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="{{ __('Download PDF') }}">
+                                        <x-heroicon-m-arrow-down-tray class="h-4 w-4" /> PDF
+                                    </a>
                                 @endif
                             </td>
                         </tr>

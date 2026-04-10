@@ -12,9 +12,12 @@ class Appraisal extends Model
     protected $fillable = [
         'user_id',
         'evaluator_id',
+        'calibrator_id',
         'period_month',
         'period_year',
         'status',
+        'calibration_status',
+        'calibration_notes',
         'attendance_score',
         'subjective_score',
         'final_score',
@@ -37,6 +40,11 @@ class Appraisal extends Model
     public function evaluator()
     {
         return $this->belongsTo(User::class, 'evaluator_id');
+    }
+
+    public function calibrator()
+    {
+        return $this->belongsTo(User::class, 'calibrator_id');
     }
 
     public function evaluations()

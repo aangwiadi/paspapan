@@ -93,7 +93,17 @@ Route::middleware([
             ->name('my-assets');
 
         Route::get('/my-performance', \App\Livewire\MyPerformance::class)
-            ->name('my-performance'); 
+            ->name('my-performance');
+
+        Route::get('/appraisal/{appraisal}/export-pdf', function (\App\Models\Appraisal $appraisal) {
+            if ($appraisal->user_id !== auth()->id() && !auth()->user()->isAdmin) {
+                abort(403);
+            }
+            $appraisal->load(['user.division', 'user.jobTitle', 'evaluator', 'calibrator', 'evaluations.kpiTemplate']);
+            $companyName = \App\Models\Setting::getValue('app.company_name', config('app.name'));
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.appraisal-report', compact('appraisal', 'companyName'));
+            return $pdf->download("appraisal-{$appraisal->user->name}-{$appraisal->period_month}-{$appraisal->period_year}.pdf");
+        })->name('appraisal.export-pdf');
     });
 
     // ADMIN AREA

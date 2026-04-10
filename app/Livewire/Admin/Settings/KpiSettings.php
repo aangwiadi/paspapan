@@ -17,6 +17,11 @@ class KpiSettings extends Component
 
     public $showModal = false;
 
+    // Period Lock fields
+    public $periodOpen = false;
+    public $periodLabel = '';
+    public $periodDeadline = '';
+
     protected $rules = [
         'name' => 'required|string|max:255',
         'weight' => 'required|integer|min:1|max:100',
@@ -26,6 +31,9 @@ class KpiSettings extends Component
     public function mount()
     {
         $this->loadKpis();
+        $this->periodOpen = (bool) \App\Models\Setting::getValue('appraisal.period_open', false);
+        $this->periodLabel = \App\Models\Setting::getValue('appraisal.period_label', '');
+        $this->periodDeadline = \App\Models\Setting::getValue('appraisal.period_deadline', '');
     }
 
     public function loadKpis()
@@ -85,6 +93,33 @@ class KpiSettings extends Component
         $kpi = KpiTemplate::findOrFail($id);
         $kpi->update(['is_active' => !$kpi->is_active]);
         $this->loadKpis();
+    }
+
+    public function savePeriodLock()
+    {
+        $this->validate([
+            'periodLabel' => 'required|string|max:255',
+            'periodDeadline' => 'required|date',
+        ]);
+
+        $this->updateSetting('appraisal.period_open', $this->periodOpen ? '1' : '0');
+        $this->updateSetting('appraisal.period_label', $this->periodLabel);
+        $this->updateSetting('appraisal.period_deadline', $this->periodDeadline);
+
+        session()->flash('success', __('Appraisal period settings updated.'));
+    }
+
+    public function togglePeriodLock()
+    {
+        $this->periodOpen = !$this->periodOpen;
+        $this->updateSetting('appraisal.period_open', $this->periodOpen ? '1' : '0');
+        session()->flash('success', $this->periodOpen ? __('Appraisal window is now OPEN.') : __('Appraisal window is now CLOSED.'));
+    }
+
+    private function updateSetting($key, $value)
+    {
+        \App\Models\Setting::where('key', $key)->update(['value' => $value]);
+        \Illuminate\Support\Facades\Cache::forget("setting.{$key}");
     }
 
     public function render()

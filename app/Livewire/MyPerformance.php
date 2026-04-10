@@ -25,6 +25,14 @@ class MyPerformance extends Component
 
     public function openSelfAssessment($appraisalId)
     {
+        // Check Period Lock
+        $periodOpen = (bool) \App\Models\Setting::getValue('appraisal.period_open', false);
+        $deadline = \App\Models\Setting::getValue('appraisal.period_deadline', '');
+        if (!$periodOpen || ($deadline && now()->gt($deadline))) {
+            session()->flash('error', __('The appraisal submission window is currently closed. Please contact HR.'));
+            return;
+        }
+
         $appraisal = Appraisal::with('evaluations.kpiTemplate')->findOrFail($appraisalId);
         
         if ($appraisal->user_id !== auth()->id() || $appraisal->status !== 'self_assessment') {

@@ -126,4 +126,51 @@
             </x-button>
         </x-slot>
     </x-dialog-modal>
+
+    <!-- Period Lock Card -->
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-10">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">🔒 {{ __('Appraisal Period Lock') }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Control when employees and managers can submit appraisals. Close the window to prevent late submissions.') }}</p>
+                    </div>
+                    <button wire:click="togglePeriodLock" class="relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 {{ $periodOpen ? 'bg-green-500' : 'bg-red-500' }}">
+                        <span class="inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $periodOpen ? 'translate-x-7' : 'translate-x-0' }}"></span>
+                    </button>
+                </div>
+
+                <div class="rounded-lg p-4 mb-4 {{ $periodOpen ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' }}">
+                    <div class="flex items-center gap-2">
+                        @if($periodOpen)
+                            <x-heroicon-m-lock-open class="h-5 w-5 text-green-600" />
+                            <span class="text-sm font-bold text-green-700 dark:text-green-400">{{ __('Window is OPEN') }} — {{ __('Employees and managers can submit appraisals.') }}</span>
+                        @else
+                            <x-heroicon-m-lock-closed class="h-5 w-5 text-red-600" />
+                            <span class="text-sm font-bold text-red-700 dark:text-red-400">{{ __('Window is CLOSED') }} — {{ __('Submissions are locked. No new assessments can be created.') }}</span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <x-label for="periodLabel" value="{{ __('Period Label') }}" />
+                        <x-input id="periodLabel" type="text" class="mt-1 block w-full" wire:model="periodLabel" placeholder="{{ __('e.g., Q1 2026, Semester 1 2026') }}" />
+                        <x-input-error for="periodLabel" class="mt-2" />
+                    </div>
+                    <div>
+                        <x-label for="periodDeadline" value="{{ __('Submission Deadline') }}" />
+                        <x-input id="periodDeadline" type="date" class="mt-1 block w-full" wire:model="periodDeadline" />
+                        <x-input-error for="periodDeadline" class="mt-2" />
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <x-button wire:click="savePeriodLock">
+                        {{ __('Save Period Settings') }}
+                    </x-button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

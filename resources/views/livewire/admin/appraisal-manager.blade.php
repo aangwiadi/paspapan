@@ -12,6 +12,48 @@
             </div>
         </div>
 
+        <!-- Period Lock Banner -->
+        <div class="mb-6 rounded-lg p-4 {{ $periodOpen ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' }}">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    @if($periodOpen)
+                        <x-heroicon-m-lock-open class="h-5 w-5 text-green-600" />
+                        <span class="text-sm font-bold text-green-700 dark:text-green-400">{{ __('Appraisal Window: OPEN') }}</span>
+                        @if($periodLabel)
+                            <span class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-800 px-2 py-0.5 rounded-full">{{ $periodLabel }}</span>
+                        @endif
+                    @else
+                        <x-heroicon-m-lock-closed class="h-5 w-5 text-red-600" />
+                        <span class="text-sm font-bold text-red-700 dark:text-red-400">{{ __('Appraisal Window: CLOSED — New evaluations are locked.') }}</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Bell Curve Score Distribution -->
+        @if(array_sum($bellCurve) > 0)
+        <div class="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 p-6">
+            <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">📊 {{ __('Score Distribution (Bell Curve)') }} — {{ __(date('F', mktime(0, 0, 0, $month, 10))) }} {{ $year }}</h3>
+            <div class="grid grid-cols-5 gap-3 items-end" style="height: 120px;">
+                @php
+                    $maxCount = max(1, max($bellCurve));
+                    $colors = ['A' => 'bg-green-500', 'B' => 'bg-blue-500', 'C' => 'bg-yellow-500', 'D' => 'bg-orange-500', 'E' => 'bg-red-500'];
+                    $labels = ['A' => '≥90 Outstanding', 'B' => '80-89 Exceeds', 'C' => '70-79 Meets', 'D' => '60-69 Needs Imp.', 'E' => '<60 Below'];
+                @endphp
+                @foreach($bellCurve as $grade => $count)
+                    <div class="flex flex-col items-center justify-end h-full">
+                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $count }}</span>
+                        <div class="{{ $colors[$grade] }} rounded-t-md w-full transition-all duration-500" style="height: {{ ($count / $maxCount) * 100 }}%; min-height: 4px;"></div>
+                        <div class="mt-2 text-center">
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $grade }}</span>
+                            <div class="text-[10px] text-gray-500 leading-tight">{{ $labels[$grade] }}</div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <!-- Filters -->
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Search -->
@@ -100,7 +142,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-2">
+                                    <div class="flex justify-end gap-2 items-center">
                                         <button wire:click="initOrEvaluate('{{ $user->id }}')" type="button" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ $eval ? __('Update Evaluation') : __('Evaluate') }}">
                                             @if($eval)
                                                 <x-heroicon-m-pencil-square class="h-5 w-5" />
@@ -108,6 +150,23 @@
                                                 <x-heroicon-m-clipboard-document-check class="h-5 w-5" />
                                             @endif
                                         </button>
+                                        @if($eval && $eval->status === 'completed')
+                                            <a href="{{ route('appraisal.export-pdf', $eval) }}" class="text-red-400 hover:text-red-600 transition-colors" title="{{ __('Download PDF') }}">
+                                                <x-heroicon-m-arrow-down-tray class="h-5 w-5" />
+                                            </a>
+                                            @if(auth()->user()->isSuperadmin && $eval->calibration_status === 'pending')
+                                                <button wire:click="calibrate({{ $eval->id }}, 'approved')" class="text-green-500 hover:text-green-700 transition-colors" title="{{ __('Approve') }}">
+                                                    <x-heroicon-m-check-circle class="h-5 w-5" />
+                                                </button>
+                                                <button wire:click="calibrate({{ $eval->id }}, 'rejected')" class="text-red-500 hover:text-red-700 transition-colors" title="{{ __('Reject') }}">
+                                                    <x-heroicon-m-x-circle class="h-5 w-5" />
+                                                </button>
+                                            @elseif($eval->calibration_status === 'approved')
+                                                <span class="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full">✓ {{ __('Calibrated') }}</span>
+                                            @elseif($eval->calibration_status === 'rejected')
+                                                <span class="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded-full">✗ {{ __('Rejected') }}</span>
+                                            @endif
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
