@@ -116,6 +116,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-2">
+                                        <button wire:click="viewHistory({{ $asset->id }})" class="text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('View History') }}">
+                                            <x-heroicon-m-clock class="h-5 w-5" />
+                                        </button>
                                         <button wire:click="edit({{ $asset->id }})" class="text-gray-400 hover:text-blue-600 transition-colors" title="{{ __('Edit') }}">
                                             <x-heroicon-m-pencil-square class="h-5 w-5" />
                                         </button>
@@ -229,6 +232,77 @@
             <x-button class="ml-2" wire:click="save" wire:loading.attr="disabled">
                 {{ __('Save Asset') }}
             </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- Asset History Modal -->
+    <x-dialog-modal wire:model.live="showHistoryModal">
+        <x-slot name="title">
+            {{ __('Asset Lifecycle History') }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if(isset($assetHistories) && $assetHistories->isNotEmpty())
+                <div class="flow-root mt-4">
+                    <ul role="list" class="-mb-8">
+                        @foreach($assetHistories as $index => $history)
+                            <li>
+                                <div class="relative pb-8">
+                                    @if(!$loop->last)
+                                        <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                                    @endif
+                                    <div class="relative flex space-x-3 text-sm">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white dark:ring-gray-800
+                                                {{ $history->action === 'created' ? 'bg-green-100 dark:bg-green-900/50' : '' }}
+                                                {{ $history->action === 'assigned' ? 'bg-blue-100 dark:bg-blue-900/50' : '' }}
+                                                {{ $history->action === 'returned' ? 'bg-indigo-100 dark:bg-indigo-900/50' : '' }}
+                                                {{ in_array($history->action, ['maintenance', 'lost', 'retired']) ? 'bg-red-100 dark:bg-red-900/50' : '' }}">
+                                                @if($history->action === 'created')
+                                                    <x-heroicon-m-plus class="h-4 w-4 text-green-600 dark:text-green-400" />
+                                                @elseif($history->action === 'assigned')
+                                                    <x-heroicon-m-user-plus class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                @elseif($history->action === 'returned')
+                                                    <x-heroicon-m-arrow-uturn-left class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                                @else
+                                                    <x-heroicon-m-wrench class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                            <div>
+                                                <p class="text-gray-900 dark:text-gray-100">
+                                                    <span class="font-semibold">{{ __(ucfirst($history->action)) }}</span>
+                                                    @if($history->user)
+                                                        {{ __('to / by') }} <span class="font-medium text-gray-900 dark:text-gray-100">{{ $history->user->name }}</span>
+                                                    @endif
+                                                </p>
+                                                @if($history->notes)
+                                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $history->notes }}</p>
+                                                @endif
+                                            </div>
+                                            <div class="text-right text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                <time datetime="{{ $history->date->toIso8601String() }}">{{ $history->date->format('d M Y, H:i') }}</time>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @else
+                <div class="py-6 text-center text-gray-500 dark:text-gray-400">
+                    <x-heroicon-o-clock class="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                    <p>{{ __('No history recorded for this asset.') }}</p>
+                </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('showHistoryModal', false)">
+                {{ __('Close') }}
+            </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
 </div>

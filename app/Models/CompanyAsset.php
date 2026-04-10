@@ -24,4 +24,9 @@ class CompanyAsset extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function histories()
+    {
+        return $this->hasMany(CompanyAssetHistory::class)->orderBy('date', 'desc');
+    }
 }

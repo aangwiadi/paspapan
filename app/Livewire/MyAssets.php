@@ -75,6 +75,13 @@ class MyAssets extends Component
             'status' => 'available', // returned to storage pool
         ]);
 
+        \App\Models\CompanyAssetHistory::create([
+            'company_asset_id' => $asset->id,
+            'user_id' => $user->id,
+            'action' => 'returned',
+            'notes' => __('Returned by User via OTP code')
+        ]);
+
         \Illuminate\Support\Facades\Cache::forget($cacheKey);
 
         $this->showReturnModal = false;
