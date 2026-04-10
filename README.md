@@ -79,6 +79,7 @@ Whether your team is in the office, on the field, or working from home, PasPapan
 
 ### 💼 Comprehensive HR Suite
 - **Automated Payroll**: Auto-calculate salaries, overtime, and deductions with professional PDF payslip generation. **Bulk Publish & Bulk Pay** actions for efficient batch processing.
+- **Indonesian Payroll Standard**: Configurable payroll components supporting **Fixed Amount**, **Daily Rate × Attendance**, and **% of Basic Salary** calculation modes. Each component is tagged as Allowance (+) or Deduction (-), with a **Taxable** toggle for PPh 21 income base. Pre-seeded with standard Indonesian components: BPJS Kesehatan (employee + employer split), BPJS Ketenagakerjaan (JHT 2% + JP 1%), and PPh 21 via Tarif Efektif Rata-rata (TER).
 - **Role-Based Payroll Detail**: Superadmin and Finance Rank 1 can view full payslip breakdowns (allowances, deductions, kasbon) directly from the admin panel.
 - **Smart Shift Management**: Flexible scheduling that adapts to your team's rotation.
 - **Digital Workflow**: Streamlined approval chains for Leave, Overtime, Reimbursement, and **Kasbon / Cash Advance** requests centralized in one unified dashboard.
@@ -90,10 +91,19 @@ Whether your team is in the office, on the field, or working from home, PasPapan
 - **Global Ready**: Multi-language support (English & Indonesian) for diverse teams.
 
 ### ✨ What's New (Enterprise V2 Modules)
-- **KPI & Performance Appraisals**: Track employee performance with smart automated attendance grading (lates/absences auto-deduct points) combined with Manager's subjective scoring, completely integrated into the admin dashboard.
-- **Smart Payroll Tax Engine (Indonesian TER)**: Fully compliant payroll processing that automatically injects deductions for BPJS Kesehatan, BPJS Ketenagakerjaan (JHT & JP), and PPh 21 using the latest Tarif Efektif Rata-rata (TER) regulations.
-- **Enterprise Asset Management**: Issue, track, and manage company assets and equipment explicitly assigned to specific employees, featuring license-locked security scopes.
+- **KPI & Performance Appraisals**: Multi-phase performance review workflow — Admin defines weighted KPI templates, employees submit self-assessments, managers evaluate side-by-side, and 1-on-1 meetings are scheduled before finalization. Final score formula: `(30% Attendance) + (70% Weighted KPI)`.
+- **PDF Appraisal Report**: Employees and managers can download a professional PDF appraisal document with KPI matrices, grading (A–E), calibration status, manager notes, and a 3-party signature block (Employee, Manager, HR Director).
+- **Score Distribution (Bell Curve)**: Visual bar chart on the Appraisal Manager page shows grade distribution (A–E) for the selected period, helping HR detect leniency bias or harsh grading patterns.
+- **Multi-Level Calibration (HR Approval)**: After a manager finalizes an appraisal, it enters `pending` calibration. Superadmin/HR Director can approve or reject the evaluation — with queued email notifications sent to the direct manager on each decision.
+- **Appraisal Period Lock**: HR can open/close the appraisal submission window from KPI Settings with a deadline date. When closed, employees and managers are blocked from creating or submitting assessments.
+- **Queued Email & System Notifications**: Every appraisal status change (initialized, self-assessment submitted, 1-on-1 scheduled, completed, calibrated) dispatches a `ShouldQueue` notification via both email and in-app bell alerts to the relevant party.
+- **Smart Payroll Tax Engine (Indonesian TER)**: Fully compliant payroll processing with auto-injected deductions for BPJS Kesehatan (4% employer / 1% employee), BPJS Ketenagakerjaan JHT (3.7% + 2%), JP (2% + 1%), and PPh 21 using the latest Tarif Efektif Rata-rata (TER) regulations. Configurable via admin panel — add/edit/toggle components freely.
+- **Enterprise Asset Management**: Full lifecycle asset tracking with 8 statuses: `available`, `assigned`, `maintenance`, `lost`, `retired`, `sold`, `auctioned`, `disposed`. Features include: purchase cost tracking, warranty/expiration monitoring (30-day yellow warning), employee assignment with auto-status sync, ownership history audit trail, and regional scope isolation. Employees can view their assigned assets via the **"My Assets"** home menu icon.
 - **Multi-Branch Regional Autonomy**: Superadmins can assign "Regional Admins" to specific provinces or cities. These branch managers will only have access to view, manage, and evaluate the employees (and their attendance/assets) strictly bound to their managed territory.
+- **UI Standardization (Mobile-First Card Pattern)**: Refactored user-facing modules (Kasbon, Assets, Performance, Reimbursement) to follow a consistent "Gold Standard" card layout with top-right action buttons and unified "Back to Home" navigation for better mobile experience.
+- **Shared-Hosting Compatible Backup System**: Redesigned System Maintenance with a native PHP database dumper/restorer, bypassing CLI `mysqldump` dependencies for 100% compatibility on shared-hosting cPanel/Plesk environments.
+- **Advanced Demo Security Middleware**: Implemented strict middleware-level protection to explicitly block demo accounts from accessing or modifying sensitive administrative configurations, system maintenance, and security settings.
+- **Full Localization Audit (Dual Language Ready)**: Completed a thorough translation audit ensuring every UI element, including empty states, tooltips, and dynamic banners, is 100% translatable in both English and Indonesian.
 - **Employee Origins Map**: Interactive Leaflet.js map with **MarkerCluster** on the Analytics Dashboard — visualizes employee geographical distribution by province. Zoom out to see aggregated cluster counts, zoom in to see individual employees scatter across regions.
 - **Double-Layered Approval Workflow**: Advanced multi-tier request approvals for Kasbon and Reimbursements, routing sequentially from Division Head to Finance Head.
 - **Dynamic Structural Seeding**: Built-in accurate corporate hierarchies right out of the box (Divisions, Levels, automated Job Titles mapping, and standardized 3-Shift rotas).
@@ -351,7 +361,7 @@ Use these accounts to explore the restricted demo environment:
 
 ---
 
-### 💖 Special Thanks & Credits
+### Special Thanks & Credits
 This project was initially built upon the solid core foundation provided by:
 *   [**Absensi Karyawan GPS Barcode**](https://github.com/ikhsan3adi/absensi-karyawan-gps-barcode) by [**Ikhsan3adi**](https://github.com/ikhsan3adi).
 *   Modified and enhanced for enterprise scalability by [**RiprLutuk**](https://github.com/RiprLutuk) in collaboration with **Vibecode**.

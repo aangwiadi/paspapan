@@ -70,8 +70,14 @@
                                 <span class="ml-2 text-xs {{ $kpi->is_active ? 'text-green-600' : 'text-gray-500' }}">{{ $kpi->is_active ? __('Active') : __('Inactive') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button wire:click="edit({{ $kpi->id }})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">{{ __('Edit') }}</button>
-                                <button wire:click="delete({{ $kpi->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">{{ __('Delete') }}</button>
+                                <div class="flex justify-end gap-2">
+                                    <button wire:click="edit({{ $kpi->id }})" class="text-gray-400 hover:text-blue-600 transition-colors" title="{{ __('Edit') }}">
+                                        <x-heroicon-m-pencil-square class="h-6 w-6" />
+                                    </button>
+                                    <button wire:click="delete({{ $kpi->id }})" wire:confirm="{{ __('Are you sure?') }}" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Delete') }}">
+                                        <x-heroicon-m-trash class="h-6 w-6" />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty

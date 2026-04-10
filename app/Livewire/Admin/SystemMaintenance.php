@@ -28,7 +28,7 @@ class SystemMaintenance extends Component
 
     public function restoreDatabase()
     {
-        if (!Auth::user()->isSuperadmin) {
+        if (!Auth::user()->isSuperadmin || Auth::user()->is_demo) {
             $this->dispatch('error', message: __('Unauthorized action.'));
             return;
         }
@@ -47,30 +47,19 @@ class SystemMaintenance extends Component
                 return;
             }
 
-            $dbHost = config('database.connections.mysql.host');
-            $dbPort = config('database.connections.mysql.port');
-            $dbName = config('database.connections.mysql.database');
-            $dbUser = config('database.connections.mysql.username');
-            $dbPassword = config('database.connections.mysql.password');
-
-            // Construct mysql command
-            $command = sprintf(
-                'mysql --user=%s --password=%s --host=%s --port=%s %s < %s',
-                escapeshellarg($dbUser),
-                escapeshellarg($dbPassword),
-                escapeshellarg($dbHost),
-                escapeshellarg($dbPort),
-                escapeshellarg($dbName),
-                escapeshellarg($path)
-            );
-
-            // Using process
-            $process = Process::fromShellCommandline($command);
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
+            // PURE PHP RESTORE (Shared Hosting Safe)
+            // We use DB::unprepared to natively execute the SQL payload via PDO.
+            // This avoids process/shell requirements entirely.
+            $sqlContents = file_get_contents($path);
+            
+            if (empty(trim($sqlContents))) {
+                throw new \Exception("Backup file is empty.");
             }
+
+            // Disable foreign keys temporarily during mass-restore
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            DB::unprepared($sqlContents);
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             $this->dispatch('success', message: __('Database restored successfully! The page will reload.'));
             
@@ -84,7 +73,7 @@ class SystemMaintenance extends Component
 
     public function cleanDatabase()
     {
-        if (!Auth::user()->isSuperadmin) {
+        if (!Auth::user()->isSuperadmin || Auth::user()->is_demo) {
             $this->dispatch('error', message: __('Unauthorized action.'));
             return;
         }
@@ -141,42 +130,66 @@ class SystemMaintenance extends Component
         }
     }
 
+    private function generateSqlDumpNative($path)
+    {
+        $handle = fopen($path, 'w');
+        if (!$handle) {
+            throw new \Exception("Cannot open file for writing at {$path}");
+        }
+        
+        fwrite($handle, "-- Absensi GPS & Enterprise Database Backup\n");
+        fwrite($handle, "-- Generated at: " . now()->toDateTimeString() . "\n\n");
+        fwrite($handle, "SET sql_mode = '';\n");
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n\n");
+
+        $tables = DB::select('SHOW TABLES');
+
+        foreach ($tables as $tableInfo) {
+            $tableArray = (array)$tableInfo;
+            $table = array_values($tableArray)[0];
+
+            $createTable = DB::select("SHOW CREATE TABLE `{$table}`");
+            $createArray = (array)$createTable[0];
+            
+            fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
+            fwrite($handle, $createArray['Create Table'] . ";\n\n");
+
+            // Fetch data incrementally via cursor to save memory limits
+            foreach (DB::table($table)->cursor() as $row) {
+                $rowArray = (array)$row;
+                $values = array_map(function ($value) {
+                    if (is_null($value)) {
+                        return 'NULL';
+                    }
+                    $value = addslashes($value);
+                    // sanitize new lines
+                    $value = str_replace("\n", "\\n", $value);
+                    $value = str_replace("\r", "\\r", $value);
+                    return "'" . $value . "'";
+                }, array_values($rowArray));
+
+                fwrite($handle, "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n");
+            }
+            fwrite($handle, "\n");
+        }
+
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
+        fclose($handle);
+    }
+
     public function downloadBackup()
     {
-        if (!Auth::user()->isSuperadmin) {
+        if (!Auth::user()->isSuperadmin || Auth::user()->is_demo) {
             $this->dispatch('error', message: __('Unauthorized action.'));
             return;
         }
 
         try {
-            $filename = 'backup-' . date('Y-m-d-H-i-s') . '.sql';
+            $filename = 'backup-native-' . date('Y-m-d-H-i-s') . '.sql';
             $path = storage_path('app/' . $filename);
 
-            $dbHost = config('database.connections.mysql.host');
-            $dbPort = config('database.connections.mysql.port');
-            $dbName = config('database.connections.mysql.database');
-            $dbUser = config('database.connections.mysql.username');
-            $dbPassword = config('database.connections.mysql.password');
-
-            // Construct mysqldump command
-            // Note: Using --no-tablespaces to avoid privilege errors on some shared hosts
-            $command = sprintf(
-                'mysqldump --user=%s --password=%s --host=%s --port=%s --no-tablespaces %s > %s',
-                escapeshellarg($dbUser),
-                escapeshellarg($dbPassword),
-                escapeshellarg($dbHost),
-                escapeshellarg($dbPort),
-                escapeshellarg($dbName),
-                escapeshellarg($path)
-            );
-
-            // mask password in log/output if needed, but here we just run it
-            $process = Process::fromShellCommandline($command);
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
+            // Execute Custom Native PHP Database Dump
+            $this->generateSqlDumpNative($path);
 
             return response()->download($path)->deleteFileAfterSend(true);
 

@@ -4,7 +4,7 @@
         
         {{-- Custom Header --}}
         <div class="flex items-center gap-3 mb-6 lg:mb-8">
-            <x-secondary-button href="{{ url()->previous() }}" class="!rounded-xl !px-3 !py-2 border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
+            <x-secondary-button href="{{ route('home') }}" class="!rounded-xl !px-3 !py-2 border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
                 <x-heroicon-o-arrow-left class="h-4 w-4 text-gray-500 dark:text-gray-300" />
             </x-secondary-button>
             <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">

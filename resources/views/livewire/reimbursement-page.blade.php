@@ -118,15 +118,23 @@
                 @else
                     {{-- LIST VIEW --}}
                     
-                    {{-- List Header --}}
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('History') }}</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Your recent reimbursement requests') }}</p>
+                    {{-- Standardized Header --}}
+                    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center gap-4">
+                            <x-secondary-button href="{{ route('home') }}" class="!rounded-xl !px-3 !py-2 border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 flex-shrink-0">
+                                <x-heroicon-o-arrow-left class="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                            </x-secondary-button>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <span class="p-1.5 bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400 rounded-lg shrink-0">💳</span>
+                                    {{ __('Reimbursement') }}
+                                </h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Your recent reimbursement requests') }}</p>
+                            </div>
                         </div>
                         <button wire:click="create" class="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold text-sm shadow-lg shadow-primary-500/30 flex items-center gap-2 transition transform active:scale-95">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            <span class="hidden sm:inline">{{ __('New Request') }}</span> {{-- Hide text on mobile --}}
+                            <span class="hidden sm:inline">{{ __('New Request') }}</span>
                         </button>
                     </div>
 

@@ -1,28 +1,35 @@
-<div class="py-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <x-heroicon-o-computer-desktop class="w-6 h-6 text-primary-600" />
-                {{ __('My Assets') }}
-            </h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Company properties currently assigned to you.') }}
-            </p>
-        </div>
-
-        @if($assets->isEmpty())
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <div class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                    <x-heroicon-o-computer-desktop class="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3 mx-auto" />
-                    <p class="font-medium">{{ __('No assets assigned to you') }}</p>
-                    <p class="text-xs mt-1">{{ __('Contact your administrator if you believe this is an error.') }}</p>
+<div class="py-6 lg:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden relative">
+            
+            {{-- Header --}}
+            <div class="px-5 py-4 lg:px-8 lg:py-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800 relative z-10">
+                <div class="flex items-center gap-3">
+                    <x-secondary-button href="{{ route('home') }}" class="!rounded-xl !px-3 !py-2 border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600">
+                        <x-heroicon-o-arrow-left class="h-4 w-4 text-gray-500 dark:text-gray-300" />
+                    </x-secondary-button>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span class="p-1.5 bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400 rounded-lg">
+                            💻
+                        </span>
+                        {{ __('My Assets') }}
+                    </h3>
                 </div>
             </div>
-        @else
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach($assets as $asset)
-                    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:shadow-md transition-shadow">
+
+            <div class="p-4 lg:p-8 bg-gray-50/50 dark:bg-gray-900/20">
+                @if($assets->isEmpty())
+                    <div class="p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
+                        <div class="w-24 h-24 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
+                            <x-heroicon-o-computer-desktop class="w-12 h-12 text-gray-300 dark:text-gray-500" />
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ __('No assets assigned to you') }}</h3>
+                        <p class="text-gray-500 dark:text-gray-400 max-w-sm">{{ __('Contact your administrator if you believe this is an error.') }}</p>
+                    </div>
+                @else
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach($assets as $asset)
+                            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:shadow-md transition-shadow">
                         <!-- Header -->
                         <div class="flex items-start justify-between mb-3">
                             <div>
@@ -76,7 +83,9 @@
                 @endforeach
             </div>
         @endif
+        </div>
     </div>
+</div>
 
     <!-- OTP Return Modal -->
     <x-dialog-modal wire:model.live="showReturnModal">

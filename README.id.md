@@ -79,6 +79,7 @@ Baik tim Anda bekerja di kantor, di lapangan, atau dari rumah, PasPapan memastik
 
 ### 💼 Suite HR Lengkap
 - **Payroll Otomatis**: Hitung gaji pokok, lembur, dan potongan otomatis dengan slip gaji PDF profesional. Dilengkapi **Bulk Publish & Bulk Pay** untuk pemrosesan batch.
+- **Standar Payroll Indonesia**: Komponen payroll yang bisa dikonfigurasi mendukung mode **Nominal Tetap**, **Tarif Harian × Kehadiran**, dan **% dari Gaji Pokok**. Setiap komponen ditandai sebagai Tunjangan (+) atau Potongan (-), dengan toggle **Kena Pajak** untuk basis pendapatan PPh 21. Sudah di-seed standar Indonesia: BPJS Kesehatan (split pekerja + pemberi kerja), BPJS Ketenagakerjaan (JHT 2% + JP 1%), dan PPh 21 via Tarif Efektif Rata-rata (TER).
 - **Detail Payroll Berbasis Peran**: Superadmin dan Finance Rank 1 dapat melihat breakdown lengkap slip gaji (tunjangan, potongan, kasbon) langsung dari panel admin.
 - **Manajemen Shift Pintar**: Penjadwalan fleksibel yang beradaptasi dengan rotasi tim Anda.
 - **Alur Kerja Digital**: Sistem persetujuan terpadu untuk Cuti, Lembur, Reimbursement, dan **Kasbon / Cash Advance** dalam satu dashboard.
@@ -90,10 +91,19 @@ Baik tim Anda bekerja di kantor, di lapangan, atau dari rumah, PasPapan memastik
 - **Siap Global**: Dukungan multi-bahasa (Inggris & Indonesia) untuk tim yang beragam.
 
 ### ✨ Apa yang Baru (Enterprise V2 Modules)
-- **KPI & Performance Appraisals**: Lacak metrik kinerja karyawan dengan sistem penilaian bobot ganda — nilai kehadiran terpotong otomatis jika telat/absen, lalu digabung dengan Penilaian Subjektif dari Manager (Nilai Akhir), langsung di admin dashboard.
-- **Smart Payroll Tax Engine (TER Indonesia)**: Memproses Payroll secara otomatis beserta suntikan hitungan mundur potongan pajak valid standar nasional: BPJS Kesehatan, BPJS Ketenagakerjaan (JHT & JP), serta PPh 21 tarif Tarif Efektif Rata-rata (TER).
-- **Enterprise Asset Management**: Bagikan, lacak, dan kendalikan data persediaan perangkat/aset perusahaan yang dipinjamkan ke spesifik karyawan, diproteksi LicenseGuard Edition.
+- **KPI & Performance Appraisals**: Alur penilaian kinerja multi-tahap — Admin mengatur template KPI berbobot, karyawan mengisi penilaian diri (self-assessment), manajer mengevaluasi secara berdampingan (sisi karyawan vs sisi manajer), lalu jadwalkan sesi 1-on-1 sebelum finalisasi. Rumus nilai akhir: `(30% Kehadiran) + (70% KPI Berbobot)`.
+- **Laporan PDF Penilaian Kinerja**: Karyawan dan manajer bisa mengunduh dokumen rapor PDF profesional berisi matriks KPI, grading (A–E), status kalibrasi, catatan manajer, dan kolom tanda tangan 3 pihak (Karyawan, Manajer, Direktur HR).
+- **Distribusi Nilai (Bell Curve)**: Grafik batang visual di halaman Appraisal Manager menampilkan distribusi grade (A–E) untuk periode terpilih, membantu HR mendeteksi bias keenakan atau penilaian terlalu keras.
+- **Kalibrasi Berlapis (Persetujuan HR)**: Setelah manajer memfinalisasi penilaian, statusnya otomatis menjadi `pending` kalibrasi. Superadmin/Direktur HR bisa menyetujui atau menolak evaluasi — dengan notifikasi email antrian terkirim ke manajer langsung.
+- **Kunci Periode Penilaian**: HR bisa membuka/menutup jendela pengiriman penilaian dari Pengaturan KPI dengan batas tanggal deadline. Jika ditutup, karyawan dan manajer diblokir dari membuat atau mengirim penilaian.
+- **Email Antrian & Notifikasi Sistem**: Setiap perubahan status penilaian (diinisialisasi, self-assessment dikirim, 1-on-1 dijadwalkan, selesai, dikalibrasi) mengirim notifikasi `ShouldQueue` via email dan lonceng notifikasi dalam aplikasi ke pihak terkait.
+- **Smart Payroll Tax Engine (TER Indonesia)**: Memproses Payroll secara otomatis beserta potongan BPJS Kesehatan (4% pemberi kerja / 1% pekerja), BPJS Ketenagakerjaan JHT (3,7% + 2%), JP (2% + 1%), serta PPh 21 Tarif Efektif Rata-rata (TER) terbaru. Bisa dikonfigurasi lewat panel admin — tambah/edit/toggle komponen dengan bebas.
+- **Enterprise Asset Management**: Pelacakan aset siklus hidup penuh dengan 8 status: `available`, `assigned`, `maintenance`, `lost`, `retired`, `sold`, `auctioned`, `disposed`. Fitur meliputi: pelacakan biaya pembelian, pemantauan garansi/masa berlaku (peringatan kuning 30 hari), penugasan ke karyawan dengan sinkronisasi status otomatis, jejak audit riwayat kepemilikan, dan isolasi scope regional. Karyawan bisa melihat aset yang ditugaskan melalui ikon **"My Assets"** di menu Home.
 - **Otonomi Admin Regional (Multi-Cabang)**: Superadmin dapat menugaskan "Admin Regional" ke Provinsi atau Kota tertentu. Admin Cabang tersebut lalu hanya bisa melihat, mengelola absensi & aset karyawan di wilayah mereka sendiri secara otonom (Scope Isolation).
+- **Standardisasi UI (Mobile-First Card Pattern)**: Re-desain modul pengguna (Kasbon, Aset, Performa, Reimburse) mengikuti layout card "Gold Standard" dengan posisi tombol aksi yang konsisten dan navigasi "Back to Home" yang terpadu untuk pengalaman mobile yang lebih premium.
+- **Sistem Backup Kompatibel Shared-Hosting**: Desain ulang Manajemen Sistem dengan dumper/restorer database kartu PHP murni, menghilangkan kebutuhan perintah terminal `mysqldump` agar 100% kompatibel di lingkungan shared-hosting (cPanel/Plesk).
+- **Middleware Keamanan Akun Demo**: Implementasi proteksi tingkat middleware untuk memblokir secara ketat akun demo dari memodifikasi konfigurasi administratif sensitif, pemeliharaan sistem, dan pengaturan keamanan.
+- **Audit Lokalisasi Menyeluruh (Dual Language Ready)**: Audit terjemahan lengkap memastikan setiap elemen UI, termasuk pesan status kosong, tooltip, dan banner dinamis, 100% dapat diterjemahkan dalam Bahasa Inggris dan Bahasa Indonesia.
 - **Peta Asal Karyawan (Employee Origins Map)**: Peta interaktif Leaflet.js dengan **MarkerCluster** di Dashboard Analitik — menampilkan sebaran geografis karyawan per provinsi. Zoom out untuk melihat total cluster, zoom in untuk melihat titik-titik karyawan menyebar di seluruh wilayah.
 - **Alur Persetujuan Berlapis (Double Approval)**: Permintaan Kasbon dan Reimbursement kini disetujui secara otomatis & berjenjang dari Kepala Divisi (Head) lalu diteruskan ke Kepala Keuangan (Finance).
 - **Struktur Perusahaan Realistis**: Seeder pabrikan yang langsung menggenerate 5 Divisi Utama secara dinamis lengkap dengan jenjang karir (Head, Manager, Senior, Staff) dan 3 Shift kerja (Pagi, Sore, Malam).
@@ -354,7 +364,7 @@ Gunakan akun berikut untuk demo aplikasi:
 
 ---
 
-### 💖 Kredit & Terima Kasih
+### Kredit & Terima Kasih
 Proyek ini dikembangkan menggunakan fondasi core yang solid dari:
 *   [**Absensi Karyawan GPS Barcode**](https://github.com/ikhsan3adi/absensi-karyawan-gps-barcode) oleh [**Ikhsan3adi**](https://github.com/ikhsan3adi).
 *   Dimodifikasi dan ditingkatkan untuk skala enterprise oleh [**RiprLutuk**](https://github.com/RiprLutuk) berkolaborasi dengan **Vibecode**.

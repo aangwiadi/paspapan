@@ -107,7 +107,7 @@
                     </x-nav-dropdown>
 
                     {{-- 3. Master Data Group --}}
-                    <x-nav-dropdown :active="request()->routeIs('admin.masters.*') || request()->routeIs('admin.employees') || request()->routeIs('admin.barcodes') || request()->routeIs('admin.barcodes.*')" triggerClasses="text-nowrap">
+                    <x-nav-dropdown :active="request()->routeIs('admin.masters.*') || request()->routeIs('admin.employees') || request()->routeIs('admin.barcodes') || request()->routeIs('admin.barcodes.*') || request()->routeIs('admin.appraisals') || request()->routeIs('admin.assets')" triggerClasses="text-nowrap">
                         <x-slot name="trigger">
                             {{ __('Master Data') }}
                             <x-heroicon-o-chevron-down class="ms-2 h-5 w-5 text-gray-400" />
@@ -163,7 +163,7 @@
                     </x-nav-dropdown>
 
                     {{-- 4. System Group --}}
-                    <x-nav-dropdown :active="request()->routeIs('admin.settings') || request()->routeIs('admin.system-maintenance') || request()->routeIs('admin.import-export.*')" triggerClasses="text-nowrap">
+                    <x-nav-dropdown :active="request()->routeIs('admin.settings') || request()->routeIs('admin.settings.kpi') || request()->routeIs('admin.system-maintenance') || request()->routeIs('admin.import-export.*')" triggerClasses="text-nowrap">
                         <x-slot name="trigger">
                             {{ __('System') }}
                             <x-heroicon-o-chevron-down class="ms-2 h-5 w-5 text-gray-400" />
@@ -213,10 +213,6 @@
                     @else
                     <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')" wire:navigate>
                         {{ __('Home') }}
-                    </x-nav-link>
-                    
-                    <x-nav-link href="{{ route('my-performance') }}" :active="request()->routeIs('my-performance')" wire:navigate>
-                        {{ __('My Performance') }}
                     </x-nav-link>
 
                     @if(Auth::user()->subordinates->isNotEmpty())

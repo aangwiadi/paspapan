@@ -1,22 +1,36 @@
 <div class="py-6 lg:py-12">
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ $showCreateModal ? __('Request Kasbon') : __('Kasbon Saya') }}
-        </h2>
-    </x-slot>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden relative">
 
-            <div class="p-4 sm:p-5 lg:p-10">
+            {{-- Header --}}
+            <div class="px-5 py-4 lg:px-8 lg:py-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800 relative z-10">
+                <div class="flex items-center gap-3">
+                    <x-secondary-button href="{{ route('home') }}" class="!rounded-xl !px-3 !py-2 border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 flex-shrink-0">
+                        <x-heroicon-o-arrow-left class="h-4 w-4 text-gray-500 dark:text-gray-300" />
+                    </x-secondary-button>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span class="p-1 sm:p-1.5 bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400 rounded-lg shrink-0">
+                            💸
+                        </span>
+                        {{ $showCreateModal ? __('Request Kasbon') : __('My Kasbon') }}
+                    </h3>
+                </div>
+                @if(!$showCreateModal)
+                <button wire:click="openCreateModal" class="px-3 sm:px-4 py-2 sm:py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold text-xs sm:text-sm shadow-lg shadow-primary-500/30 flex items-center gap-1 sm:gap-2 transition transform active:scale-95 shrink-0">
+                    <x-heroicon-m-plus class="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span class="hidden sm:inline">{{ __('Request Kasbon') }}</span>
+                </button>
+                @endif
+            </div>
+
+            <div class="p-4 sm:p-5 lg:p-8">
 
                 @if($showCreateModal)
                 {{-- HEADER: Back Button --}}
                 <div class="flex items-center justify-between mb-6 sm:mb-8">
-                    <button wire:click="$set('showCreateModal', false)" class="p-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 transition shadow-sm">
-                        <x-heroicon-o-arrow-left class="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                    <button wire:click="$set('showCreateModal', false)" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1">
+                        <x-heroicon-m-arrow-uturn-left class="w-4 h-4" /> {{ __('Back to List') }}
                     </button>
-                    <div class="w-10"></div> {{-- Spacer --}}
                 </div>
 
                 {{-- CREATE FORM --}}
@@ -73,7 +87,7 @@
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span><strong class="font-bold">PENTING:</strong> Jika disetujui, nominal ini akan otomatis dipotong pada Payroll bulan dan tahun yang Anda pilih di atas.</span>
+                            <span><strong class="font-bold">{{ __('IMPORTANT') }}:</strong> {{ __('If approved, this amount will be automatically deducted from your payroll for the month and year you selected above.') }}</span>
                         </p>
                     </div>
 
@@ -90,57 +104,40 @@
                 @else
                 {{-- LIST VIEW --}}
 
-                {{-- Summary Cards --}}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                {{-- Summary Cards (Compact Mode) --}}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                     {{-- Unpaid --}}
-                    <div class="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="h-9 w-9 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                                <x-heroicon-m-clock class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            <span class="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">{{ __('Belum Terbayar') }}</span>
+                    <div class="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10 p-3 flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                            <x-heroicon-m-clock class="h-5 w-5 text-amber-600 dark:text-amber-400" />
                         </div>
-                        <p class="text-xl font-black text-amber-800 dark:text-amber-200">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</p>
-                        <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">{{ __('Pending + Approved') }}</p>
+                        <div>
+                            <p class="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{{ __('Unpaid') }}</p>
+                            <p class="text-sm font-black text-amber-900 dark:text-amber-200 mt-0.5">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</p>
+                        </div>
                     </div>
 
                     {{-- Paid --}}
-                    <div class="rounded-2xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="h-9 w-9 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
-                                <x-heroicon-m-check-badge class="h-5 w-5 text-green-600 dark:text-green-400" />
-                            </div>
-                            <span class="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wider">{{ __('Sudah Dibayar') }}</span>
+                    <div class="rounded-xl border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10 p-3 flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <x-heroicon-m-check-badge class="h-5 w-5 text-green-600 dark:text-green-400" />
                         </div>
-                        <p class="text-xl font-black text-green-800 dark:text-green-200">Rp {{ number_format($totalPaid, 0, ',', '.') }}</p>
-                        <p class="text-[10px] text-green-600 dark:text-green-400 mt-1">{{ __('Sudah masuk potongan gaji') }}</p>
+                        <div>
+                            <p class="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">{{ __('Paid') }}</p>
+                            <p class="text-sm font-black text-green-900 dark:text-green-200 mt-0.5">Rp {{ number_format($totalPaid, 0, ',', '.') }}</p>
+                        </div>
                     </div>
 
                     {{-- Limit --}}
-                    <div class="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-4">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="h-9 w-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                                <x-heroicon-m-shield-check class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span class="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">{{ __('Limit Kasbon') }}</span>
+                    <div class="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 p-3 flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <x-heroicon-m-shield-check class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <p class="text-xl font-black text-blue-800 dark:text-blue-200">Rp {{ number_format($basicSalary, 0, ',', '.') }}</p>
-                        <p class="text-[10px] text-blue-600 dark:text-blue-400 mt-1">{{ __('Maks. per pengajuan = Gaji Pokok') }}</p>
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">{{ __('Kasbon Limit') }}</p>
+                            <p class="text-sm font-black text-blue-900 dark:text-blue-200 mt-0.5">Rp {{ number_format($basicSalary, 0, ',', '.') }}</p>
+                        </div>
                     </div>
-                </div>
-
-                {{-- List Header --}}
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Request History') }}</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Your recent Kasbon requests') }}</p>
-                    </div>
-                    <button wire:click="openCreateModal" class="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold text-sm shadow-lg shadow-primary-500/30 flex items-center gap-2 transition transform active:scale-95">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span class="hidden sm:inline">{{ __('Request Kasbon') }}</span>
-                    </button>
                 </div>
 
                 @if($advances->isEmpty())

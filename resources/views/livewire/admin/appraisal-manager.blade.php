@@ -145,21 +145,21 @@
                                     <div class="flex justify-end gap-2 items-center">
                                         <button wire:click="initOrEvaluate('{{ $user->id }}')" type="button" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ $eval ? __('Update Evaluation') : __('Evaluate') }}">
                                             @if($eval)
-                                                <x-heroicon-m-pencil-square class="h-5 w-5" />
+                                                <x-heroicon-m-pencil-square class="h-6 w-6" />
                                             @else
-                                                <x-heroicon-m-clipboard-document-check class="h-5 w-5" />
+                                                <x-heroicon-m-clipboard-document-check class="h-6 w-6" />
                                             @endif
                                         </button>
                                         @if($eval && $eval->status === 'completed')
-                                            <a href="{{ route('appraisal.export-pdf', $eval) }}" class="text-red-400 hover:text-red-600 transition-colors" title="{{ __('Download PDF') }}">
-                                                <x-heroicon-m-arrow-down-tray class="h-5 w-5" />
+                                            <a href="{{ route('appraisal.export-pdf', $eval) }}" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Download PDF') }}">
+                                                <x-heroicon-m-arrow-down-tray class="h-6 w-6" />
                                             </a>
                                             @if(auth()->user()->isSuperadmin && $eval->calibration_status === 'pending')
-                                                <button wire:click="calibrate({{ $eval->id }}, 'approved')" class="text-green-500 hover:text-green-700 transition-colors" title="{{ __('Approve') }}">
-                                                    <x-heroicon-m-check-circle class="h-5 w-5" />
+                                                <button wire:click="calibrate({{ $eval->id }}, 'approved')" class="text-gray-400 hover:text-green-600 transition-colors" title="{{ __('Approve') }}">
+                                                    <x-heroicon-m-check-circle class="h-6 w-6" />
                                                 </button>
-                                                <button wire:click="calibrate({{ $eval->id }}, 'rejected')" class="text-red-500 hover:text-red-700 transition-colors" title="{{ __('Reject') }}">
-                                                    <x-heroicon-m-x-circle class="h-5 w-5" />
+                                                <button wire:click="calibrate({{ $eval->id }}, 'rejected')" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Reject') }}">
+                                                    <x-heroicon-m-x-circle class="h-6 w-6" />
                                                 </button>
                                             @elseif($eval->calibration_status === 'approved')
                                                 <span class="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full">✓ {{ __('Calibrated') }}</span>
