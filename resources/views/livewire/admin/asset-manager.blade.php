@@ -17,6 +17,43 @@
             </x-button>
         </div>
 
+        <!-- Pending OTP Return Banners -->
+        @php
+            $otpNotifications = auth()->user()->unreadNotifications->where('type', 'App\Notifications\AssetReturnOtpRequested');
+        @endphp
+        
+        @if($otpNotifications->isNotEmpty())
+            <div class="mb-6 space-y-3">
+                @foreach($otpNotifications as $notif)
+                    <div class="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm dark:border-amber-900/50 dark:bg-amber-900/20">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <x-heroicon-o-exclamation-triangle class="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-amber-800 dark:text-amber-400">
+                                    {{ __('Asset Return Request') }}
+                                </h3>
+                                <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                                    <span class="font-semibold">{{ $notif->data['user_name'] ?? 'Unknown User' }}</span> {{ __('is requesting to return') }} <span class="font-semibold">{{ $notif->data['asset_name'] ?? 'an asset' }}</span>. 
+                                    {{ __('Provide them with this OTP to finalize the return:') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="rounded-md bg-white px-4 py-2 text-lg font-mono font-bold tracking-widest text-amber-700 shadow-sm border border-amber-200 dark:bg-gray-800 dark:border-amber-700 dark:text-amber-400">
+                                {{ $notif->data['otp'] ?? '000000' }}
+                            </div>
+                            <!-- Button to simply dismiss notification if wanted -->
+                            <button wire:click="markNotificationAsRead('{{ $notif->id }}')" class="rounded bg-amber-100 px-2 py-1.5 text-xs font-semibold text-amber-800 shadow-sm hover:bg-amber-200 dark:bg-amber-900/50 dark:text-amber-300 dark:hover:bg-amber-800/80">
+                                {{ __('Dismiss') }}
+                            </button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <!-- Filters -->
         <div class="mb-6 flex flex-col gap-4 sm:flex-row">
             <x-input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ __('Search asset name or user...') }}" class="w-full sm:max-w-md" />

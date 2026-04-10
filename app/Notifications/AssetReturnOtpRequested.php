@@ -31,7 +31,22 @@ class AssetReturnOtpRequested extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
+    {
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject('Asset Return Request: ' . $this->assetName)
+            ->greeting('Hello,')
+            ->line("{$this->userName} has requested to return their assigned company asset: **{$this->assetName}**.")
+            ->line("To confirm and finalize the return process, please provide the following 6-digit OTP code to {$this->userName}:")
+            ->line(new \Illuminate\Support\HtmlString('<div style="background-color: #f3f4f6; margin: 20px 0; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 12px; border-radius: 8px;">' . $this->otp . '</div>'))
+            ->action('View Asset Management', route('admin.assets'))
+            ->line('If this request is a mistake, you may ignore this message.');
     }
 
     /**
