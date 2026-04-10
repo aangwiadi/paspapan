@@ -41,11 +41,13 @@ class MyAssets extends Component
         
         if ($supervisor) {
             $supervisor->notify(new \App\Notifications\AssetReturnOtpRequested($asset->name, $user->name, $otp));
+            $supervisor->notify(new \App\Notifications\AssetReturnOtpRequestedEmail($asset->name, $user->name, $otp));
         } else {
             // Fallback to all admins if no direct supervisor
             $admins = \App\Models\User::whereIn('group', ['admin', 'superadmin'])->get();
             foreach ($admins as $admin) {
                 $admin->notify(new \App\Notifications\AssetReturnOtpRequested($asset->name, $user->name, $otp));
+                $admin->notify(new \App\Notifications\AssetReturnOtpRequestedEmail($asset->name, $user->name, $otp));
             }
         }
 
