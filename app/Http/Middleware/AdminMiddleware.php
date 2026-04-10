@@ -20,20 +20,8 @@ class AdminMiddleware
         if (Auth::check() && Auth::user()?->isAdmin) {
 
             // DEMO USER RESTRICTIONS
-            if (Auth::user()->is_demo) {
-                $restrictedDemoRoutes = [
-                    'admin.masters.admin',
-                    'admin.settings',
-                    'admin.system-maintenance'
-                ];
-
-                if (in_array($request->route()->getName(), $restrictedDemoRoutes)) {
-                    if ($request->wantsJson()) {
-                        abort(403, __('Akun Demo dibatasi untuk mengakses fitur krusial ini.'));
-                    }
-                    return redirect()->route('admin.dashboard')->with('error', __('Akun Demo dibatasi untuk mengakses menu keamanan dan konfigurasi sistem.'));
-                }
-            }
+            // Notice: The demo restrictions are evaluated inside each Livewire component (ReadOnly)
+            // We allow them to navigate without 403.
 
             return $next($request);
         }
