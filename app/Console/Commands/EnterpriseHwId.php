@@ -42,20 +42,22 @@ class EnterpriseHwId extends Command
     public static function generate()
     {
         $mac = '';
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            @exec('getmac /fo csv /nh', $output);
-            if (!empty($output)) {
-                $mac = trim(str_replace('"', '', explode(',', $output[0] ?? '')[0] ?? ''));
-            }
-        } else {
-            // Try 'ip link' first (modern Linux)
-            @exec("ip link show 2>/dev/null | awk '/ether/ {print $2}'", $output);
-            if (empty($output)) {
-                // Fallback to ifconfig (Mac/BSD/Older Linux)
-                @exec("ifconfig -a 2>/dev/null | grep -ioE '([a-z0-9]{2}:){5}[a-z0-9]{2}'", $output);
-            }
-            if (!empty($output)) {
-                $mac = trim($output[0] ?? '');
+        if (function_exists('exec')) {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                @exec('getmac /fo csv /nh', $output);
+                if (!empty($output)) {
+                    $mac = trim(str_replace('"', '', explode(',', $output[0] ?? '')[0] ?? ''));
+                }
+            } else {
+                // Try 'ip link' first (modern Linux)
+                @exec("ip link show 2>/dev/null | awk '/ether/ {print $2}'", $output);
+                if (empty($output)) {
+                    // Fallback to ifconfig (Mac/BSD/Older Linux)
+                    @exec("ifconfig -a 2>/dev/null | grep -ioE '([a-z0-9]{2}:){5}[a-z0-9]{2}'", $output);
+                }
+                if (!empty($output)) {
+                    $mac = trim($output[0] ?? '');
+                }
             }
         }
         
