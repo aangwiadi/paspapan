@@ -18,9 +18,22 @@ class AdminMiddleware
     {
         // Check if the user is authenticated and belongs to the 'admin' or 'superadmin' group
         if (Auth::check() && Auth::user()?->isAdmin) {
-            
-            // DEMO USER RESTRICTIONS (Only block actions inside components, not the route viewing itself)
-            // Allow them to tour the pages without getting 403 redirects.
+
+            // DEMO USER RESTRICTIONS
+            if (Auth::user()->is_demo) {
+                $restrictedDemoRoutes = [
+                    'admin.masters.admin',
+                    'admin.settings',
+                    'admin.system-maintenance'
+                ];
+
+                if (in_array($request->route()->getName(), $restrictedDemoRoutes)) {
+                    if ($request->wantsJson()) {
+                        abort(403, __('Akun Demo dibatasi untuk mengakses fitur krusial ini.'));
+                    }
+                    return redirect()->route('admin.dashboard')->with('error', __('Akun Demo dibatasi untuk mengakses menu keamanan dan konfigurasi sistem.'));
+                }
+            }
 
             return $next($request);
         }
