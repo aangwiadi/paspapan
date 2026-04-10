@@ -75,6 +75,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Asset Info') }}</th>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Type') }}</th>
+                            <th scope="col" class="px-6 py-4 font-medium">{{ __('Purchase & Expiry') }}</th>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Assigned To') }}</th>
                             <th scope="col" class="px-6 py-4 font-medium">{{ __('Status') }}</th>
                             <th scope="col" class="px-6 py-4 text-right font-medium">{{ __('Actions') }}</th>
@@ -93,6 +94,31 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-1">
+                                        @if($asset->purchase_cost)
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">Rp {{ number_format($asset->purchase_cost, 0, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">{{ __('Unknown value') }}</span>
+                                        @endif
+
+                                        @if($asset->expiration_date)
+                                            @if($asset->isExpired())
+                                                <span class="inline-flex max-w-fit items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400">
+                                                    {{ __('Expired') }}: {{ \Carbon\Carbon::parse($asset->expiration_date)->format('d M Y') }}
+                                                </span>
+                                            @elseif($asset->isExpiringSoon())
+                                                <span class="inline-flex max-w-fit items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-yellow-50 text-yellow-700 ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                                    {{ __('Expiring') }}: {{ \Carbon\Carbon::parse($asset->expiration_date)->format('d M Y') }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex max-w-fit items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400">
+                                                    {{ __('Valid till') }}: {{ \Carbon\Carbon::parse($asset->expiration_date)->format('d M Y') }}
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
                                     @if($asset->user)
                                         <div class="flex items-center gap-3">
                                             <img class="h-8 w-8 rounded-full object-cover" src="{{ $asset->user->profile_photo_url }}" alt="{{ $asset->user->name }}" />
@@ -107,9 +133,9 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
-                                        {{ $asset->status === 'available' ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                                        {{ $asset->status === 'assigned' ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
-                                        {{ $asset->status === 'lost' ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                        {{ in_array($asset->status, ['available']) ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                        {{ in_array($asset->status, ['assigned', 'sold', 'auctioned']) ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
+                                        {{ in_array($asset->status, ['lost', 'disposed']) ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400' : '' }}
                                         {{ in_array($asset->status, ['maintenance', 'retired']) ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}">
                                         {{ __(ucfirst($asset->status)) }}
                                     </span>
@@ -187,7 +213,28 @@
                                 <option value="maintenance">{{ __('In Maintenance') }}</option>
                                 <option value="lost">{{ __('Lost / Missing') }}</option>
                                 <option value="retired">{{ __('Retired') }}</option>
+                                <option value="sold">{{ __('Sold') }}</option>
+                                <option value="auctioned">{{ __('Auctioned') }}</option>
+                                <option value="disposed">{{ __('Disposed / Scrapped') }}</option>
                             </x-tom-select>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">{{ __('Financials & Validity') }}</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <x-label for="purchase_date" value="{{ __('Purchase Date') }}" />
+                                <x-input id="purchase_date" type="date" class="mt-1 block w-full" wire:model="purchase_date" />
+                            </div>
+                            <div>
+                                <x-label for="purchase_cost" value="{{ __('Purchase Cost') }}" />
+                                <x-input id="purchase_cost" type="number" step="0.01" class="mt-1 block w-full font-mono text-sm" wire:model="purchase_cost" placeholder="5000000" />
+                            </div>
+                            <div>
+                                <x-label for="expiration_date" value="{{ __('Expiration / Warranty') }}" />
+                                <x-input id="expiration_date" type="date" class="mt-1 block w-full" wire:model="expiration_date" />
+                            </div>
                         </div>
                     </div>
 

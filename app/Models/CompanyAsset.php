@@ -10,11 +10,22 @@ class CompanyAsset extends Model
         'name',
         'serial_number',
         'type',
+        'purchase_date',
+        'purchase_cost',
+        'expiration_date',
         'user_id',
         'date_assigned',
         'return_date',
         'status',
         'notes',
+    ];
+
+    protected $casts = [
+        'date_assigned' => 'date',
+        'return_date' => 'date',
+        'purchase_date' => 'date',
+        'expiration_date' => 'date',
+        'purchase_cost' => 'decimal:2',
     ];
 
     /**
@@ -28,5 +39,17 @@ class CompanyAsset extends Model
     public function histories()
     {
         return $this->hasMany(CompanyAssetHistory::class)->orderBy('date', 'desc');
+    }
+
+    public function isExpired()
+    {
+        if (!$this->expiration_date) return false;
+        return now()->startOfDay()->greaterThan($this->expiration_date);
+    }
+
+    public function isExpiringSoon()
+    {
+        if (!$this->expiration_date || $this->isExpired()) return false;
+        return now()->startOfDay()->diffInDays($this->expiration_date, false) <= 30;
     }
 }
