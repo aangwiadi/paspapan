@@ -10,12 +10,10 @@
                     {{ __('Manage your organization\'s workforce, roles, and access.') }}
                 </p>
             </div>
-            @unless(auth()->user()->is_demo)
             <x-button wire:click="showCreating" class="!bg-primary-600 hover:!bg-primary-700">
                 <x-heroicon-m-plus class="mr-2 h-4 w-4" />
                 {{ __('Add Employee') }}
             </x-button>
-            @endunless
         </div>
 
         <!-- Filters -->
@@ -93,14 +91,12 @@
                                         <button wire:click="show('{{ $user->id }}')" class="text-gray-400 hover:text-primary-600 transition-colors" title="{{ __('View') }}">
                                             <x-heroicon-m-eye class="h-5 w-5" />
                                         </button>
-                                        @unless(auth()->user()->is_demo)
                                         <button wire:click="edit('{{ $user->id }}')" class="text-gray-400 hover:text-blue-600 transition-colors" title="{{ __('Edit') }}">
                                             <x-heroicon-m-pencil-square class="h-5 w-5" />
                                         </button>
                                         <button wire:click="confirmDeletion('{{ $user->id }}', '{{ $user->name }}')" class="text-gray-400 hover:text-red-600 transition-colors" title="{{ __('Delete') }}">
                                             <x-heroicon-m-trash class="h-5 w-5" />
                                         </button>
-                                        @endunless
                                     </div>
                                 </td>
                             </tr>
@@ -148,10 +144,8 @@
                         </div>
 
                          <div class="flex justify-end gap-3 pt-2">
-                             @unless(auth()->user()->is_demo)
                              <button wire:click="edit('{{ $user->id }}')" class="text-blue-600 text-xs font-medium uppercase tracking-wide">Edit</button>
                              <button wire:click="confirmDeletion('{{ $user->id }}', '{{ $user->name }}')" class="text-red-600 text-xs font-medium uppercase tracking-wide">Delete</button>
-                             @endunless
                         </div>
                     </div>
                  @endforeach
