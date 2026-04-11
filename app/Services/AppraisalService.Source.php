@@ -65,45 +65,106 @@ class AppraisalService
     /**
      * Finalize Appraisal after Manager Reviews and 1 on 1
      */
-    public function finalizeAppraisal(Appraisal $appraisal, array $managerScores, array $evalComments, string $notes, string $status, ?string $meetingDate = null, ?string $meetingLink = null): Appraisal
-    {
-        $totalWeight = 0;
-        $weightedKpiScore = 0;
+    public function finalizeAppraisal(
+        Appraisal $appraisal, 
+        array $managerScores, 
+        array $evalComments, 
+        array $evidenceDescriptions,
+        ?string $managerNotes, 
+        ?string $employeeNotes,
+        ?string $developmentRecommendations,
+        string $status, 
+        ?string $meetingDate = null, 
+        ?string $meetingLink = null
+    ): Appraisal {
 
+        // Step 1: Persist all evaluation data
         foreach ($appraisal->evaluations as $eval) {
-            $score = $managerScores[$eval->id] ?? 0;
+            $rawScore = $managerScores[$eval->id] ?? '';
+            $score = $rawScore === '' ? null : (float)$rawScore;
+            
             $comment = $evalComments[$eval->id] ?? null;
+            $evidence = $evidenceDescriptions[$eval->id] ?? null;
 
             $eval->update([
                 'manager_score' => $score,
-                'comments' => $comment
+                'comments' => $comment,
+                'evidence_description' => $evidence
             ]);
-
-            $weight = $eval->kpiTemplate->weight;
-            $totalWeight += $weight;
-            $weightedKpiScore += ($score * ($weight / 100));
         }
 
-        // Final score logic: Configured Attendance Weight + KPI Weight (remaining)
+        // Step 2: Group-aware weighted calculation
+        // Load fresh evaluations with kpiTemplate and kpiTemplate.kpiGroup
+        $appraisal->load('evaluations.kpiTemplate.kpiGroup');
+        
+        // Build group buckets: group_id => [evals...]
+        $groupBuckets = [];
+        foreach ($appraisal->evaluations as $eval) {
+            $groupId = $eval->kpiTemplate->kpi_group_id ?? 'ungrouped';
+            $groupBuckets[$groupId][] = $eval;
+        }
+
+        $totalGroupWeight = 0;
+        $weightedGroupScore = 0;
+
+        foreach ($groupBuckets as $groupId => $evals) {
+            // Get group weight (percentage of overall KPI score)
+            $group = ($groupId !== 'ungrouped') ? \App\Models\KpiGroup::find($groupId) : null;
+            $groupWeight = $group ? $group->weight : 100; // If ungrouped, treat as 100%
+
+            // Calculate weighted average within this group
+            $childTotalWeight = 0;
+            $childWeightedScore = 0;
+
+            foreach ($evals as $eval) {
+                $score = $eval->manager_score;
+                $templateWeight = $eval->kpiTemplate->weight; // % within this group
+
+                $childTotalWeight += $templateWeight;
+                // Score is 1-5, compute as-is (we'll normalize to 5-point at the end)
+                $childWeightedScore += (($score ?? 0) * ($templateWeight / 100));
+            }
+
+            // Normalize if child weights don't sum to 100
+            if ($childTotalWeight > 0) {
+                $normalizedGroupScore = $childWeightedScore / ($childTotalWeight / 100);
+            } else {
+                $normalizedGroupScore = 0;
+            }
+
+            $totalGroupWeight += $groupWeight;
+            $weightedGroupScore += ($normalizedGroupScore * ($groupWeight / 100));
+        }
+
+        // Normalize if group weights don't sum to 100
+        if ($totalGroupWeight > 0) {
+            $overallKpiScore5 = $weightedGroupScore / ($totalGroupWeight / 100);
+        } else {
+            $overallKpiScore5 = 0;
+        }
+
+        // Convert 5-point scale to 100-point scale for storage
+        $overallKpiScore100 = $overallKpiScore5 * 20;
+
+        // Step 3: Final score = Attendance portion + KPI portion
         $attendanceWeightPercent = (float) \App\Models\Setting::getValue('appraisal.attendance_weight', 30);
         $attendanceWeight = $attendanceWeightPercent / 100;
         $kpiWeight = 1.0 - $attendanceWeight;
-        
-        // If 0 KPIs, default back to attendance alone.
-        if ($totalWeight == 0) {
+
+        if (count($groupBuckets) == 0) {
             $finalScore = $appraisal->attendance_score;
         } else {
-            // Normalize KPI score if total weight != 100% just in case
-            $normalizedKpi = ($weightedKpiScore / ($totalWeight / 100));
-            $finalScore = ($appraisal->attendance_score * $attendanceWeight) + ($normalizedKpi * $kpiWeight);
+            $finalScore = ($appraisal->attendance_score * $attendanceWeight) + ($overallKpiScore100 * $kpiWeight);
         }
 
         $appraisal->update([
             'evaluator_id' => auth()->id(),
             'status' => $status,
-            'subjective_score' => $normalizedKpi ?? 0,
+            'subjective_score' => round($overallKpiScore100, 2),
             'final_score' => round($finalScore, 2),
-            'notes' => $notes,
+            'notes' => $managerNotes,
+            'employee_notes' => $employeeNotes,
+            'development_recommendation' => $developmentRecommendations,
             'meeting_date' => $meetingDate,
             'meeting_link' => $meetingLink,
         ]);
