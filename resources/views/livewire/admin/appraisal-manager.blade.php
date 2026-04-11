@@ -283,36 +283,59 @@
                     <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">{{ __('KPI Performance Matrices') }}</h3>
                     
                     @foreach($evaluations as $eval)
-                        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <div class="flex justify-between items-center mb-3">
-                                <h4 class="font-bold text-gray-900 dark:text-gray-100">{{ $eval->kpiTemplate->name ?? 'Unknown KPI' }}</h4>
-                                <span class="text-xs font-mono bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-1 rounded">
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 shadow-sm dark:border-gray-700 mt-4">
+                            <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">
+                                <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ $eval->kpiTemplate->name ?? 'Unknown KPI' }}</h4>
+                                <span class="text-sm font-semibold bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 px-3 py-1 rounded-full border border-primary-200 dark:border-primary-800">
                                     {{ __('Weight') }}: {{ $eval->kpiTemplate->weight ?? 0 }}%
                                 </span>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Self Assessment Half -->
-                                <div class="border-r border-gray-200 dark:border-gray-600 pr-4">
-                                    <h5 class="text-xs uppercase text-gray-500 font-bold mb-2">{{ __('Employee Self Score') }}</h5>
+                                <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700 relative">
+                                    <div class="absolute -right-3 top-1/2 transform -translate-y-1/2 z-10 hidden md:flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-6 h-6 shadow-sm">
+                                        <x-heroicon-m-chevron-right class="h-4 w-4 text-gray-400" />
+                                    </div>
+                                    <h5 class="text-sm uppercase tracking-wider text-gray-600 dark:text-gray-400 font-bold mb-4 flex items-center gap-2">
+                                        <x-heroicon-m-user class="h-4 w-4" />
+                                        {{ __('Employee Self Score') }}
+                                    </h5>
                                     @if($eval->self_score)
-                                        <div class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ $eval->self_score }}</div>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400 italic">"{{ $eval->comments }}"</p>
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div class="text-4xl font-black text-gray-900 dark:text-white">{{ $eval->self_score }}</div>
+                                            <span class="text-sm font-medium text-gray-400">/ 100</span>
+                                        </div>
+                                        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative shadow-sm">
+                                            <x-heroicon-m-chat-bubble-left-ellipsis class="h-5 w-5 text-gray-200 dark:text-gray-700 absolute top-3 right-3" />
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 italic pr-8 relative z-10">"{{ $eval->comments }}"</p>
+                                        </div>
                                     @else
-                                        <p class="text-sm text-gray-400 italic">{{ __('No self-assessment received yet.') }}</p>
+                                        <div class="flex flex-col items-center justify-center py-6 text-center">
+                                            <x-heroicon-m-clock class="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
+                                            <p class="text-sm text-gray-400 italic">{{ __('No self-assessment received yet.') }}</p>
+                                        </div>
                                     @endif
                                 </div>
                                 
                                 <!-- Manager Evaluation Half -->
-                                <div>
-                                    <h5 class="text-xs uppercase text-gray-500 font-bold mb-2">{{ __('Manager Input') }}</h5>
+                                <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                                    <h5 class="text-sm uppercase tracking-wider text-blue-800 dark:text-blue-400 font-bold mb-4 flex items-center gap-2">
+                                        <x-heroicon-m-clipboard-document-check class="h-4 w-4" />
+                                        {{ __('Manager Input') }}
+                                    </h5>
                                     <div>
-                                        <x-label for="ms_{{ $eval->id }}" value="{{ __('Manager Score (1-100)') }}" />
-                                        <x-input id="ms_{{ $eval->id }}" type="number" min="0" max="100" class="mt-1 w-24 block" wire:model="managerScores.{{ $eval->id }}" />
+                                        <x-label for="ms_{{ $eval->id }}" value="{{ __('Manager Score (1-100)') }}" class="text-gray-700 dark:text-gray-300 mb-1" />
+                                        <div class="relative rounded-md shadow-sm">
+                                            <x-input id="ms_{{ $eval->id }}" type="number" min="0" max="100" class="block w-full pr-12 sm:text-lg font-bold text-blue-900 dark:text-blue-100 border-blue-200 focus:border-blue-500 focus:ring-blue-500 dark:border-blue-800 dark:bg-blue-900/20" wire:model="managerScores.{{ $eval->id }}" />
+                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                                <span class="text-gray-500 sm:text-sm">/ 100</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <x-label for="mc_{{ $eval->id }}" value="{{ __('Manager Note (Optional)') }}" />
-                                        <textarea id="mc_{{ $eval->id }}" wire:model="evalComments.{{ $eval->id }}" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"></textarea>
+                                    <div class="mt-4">
+                                        <x-label for="mc_{{ $eval->id }}" value="{{ __('Manager Note (Optional)') }}" class="text-gray-700 dark:text-gray-300 mb-1" />
+                                        <textarea id="mc_{{ $eval->id }}" wire:model="evalComments.{{ $eval->id }}" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300" placeholder="{{ __('Provide constructive feedback here...') }}"></textarea>
                                     </div>
                                 </div>
                             </div>
