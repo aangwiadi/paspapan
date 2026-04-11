@@ -170,14 +170,16 @@ class UserForm extends Form
 
     private function isAllowed()
     {
-        // Demo User cannot perform any mutations
-        if (Auth::user()->is_demo) {
+        // Demo User cannot perform mutations on other admins or superadmins.
+        // However, demo admins have full access to manage regular employees (group === 'user').
+        if (Auth::user()->is_demo && $this->group !== 'user') {
             return false;
         }
 
         if ($this->group === 'user') {
             return Auth::user()?->isAdmin;
         }
+        
         return Auth::user()?->isSuperadmin || (Auth::user()?->isAdmin && Auth::user()?->id === $this->user?->id);
     }
 }
