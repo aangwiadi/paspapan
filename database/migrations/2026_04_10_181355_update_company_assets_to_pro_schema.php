@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,8 +18,17 @@ return new class extends Migration
             $table->date('expiration_date')->nullable()->after('purchase_cost');
         });
 
-        // Safely alter ENUM using Raw SQL to avoid Doctrine/DBAL issues
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE company_assets MODIFY status ENUM('available', 'assigned', 'maintenance', 'lost', 'retired', 'sold', 'auctioned', 'disposed') DEFAULT 'available'");
+        // Safely alter ENUM using PostgreSQL syntax
+        DB::statement("DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'company_assets_status_pro') THEN
+                CREATE TYPE company_assets_status_pro AS ENUM ('available', 'assigned', 'maintenance', 'lost', 'retired', 'sold', 'auctioned', 'disposed');
+            END IF;
+        END $$;");
+        
+        // Drop the default first, then convert column type, then set default back
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status DROP DEFAULT");
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status TYPE company_assets_status_pro USING status::company_assets_status_pro");
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status SET DEFAULT 'available'::company_assets_status_pro");
     }
 
     /**
@@ -30,6 +40,18 @@ return new class extends Migration
             $table->dropColumn(['purchase_date', 'purchase_cost', 'expiration_date']);
         });
 
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE company_assets MODIFY status ENUM('available', 'assigned', 'maintenance', 'lost', 'retired') DEFAULT 'available'");
+        DB::statement("DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'company_assets_status_old') THEN
+                CREATE TYPE company_assets_status_old AS ENUM ('available', 'assigned', 'maintenance', 'lost', 'retired');
+            END IF;
+        END $$;");
+        
+        // Drop the default first, then convert back to old enum, then set default back
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status DROP DEFAULT");
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status TYPE company_assets_status_old USING status::company_assets_status_old");
+        DB::statement("ALTER TABLE company_assets ALTER COLUMN status SET DEFAULT 'available'::company_assets_status_old");
+        
+        // Drop the new enum type
+        DB::statement("DROP TYPE IF EXISTS company_assets_status_pro");
     }
 };

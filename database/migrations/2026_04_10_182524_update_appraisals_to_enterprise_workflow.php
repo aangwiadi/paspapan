@@ -30,8 +30,16 @@ return new class extends Migration
             $table->boolean('employee_acknowledgement')->default(false)->after('notes');
         });
 
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE appraisals MODIFY evaluator_id CHAR(26) NULL");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE appraisals ADD COLUMN status ENUM('draft', 'self_assessment', 'manager_review', '1on1_scheduled', 'completed') DEFAULT 'draft' AFTER period_year");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE appraisals ALTER COLUMN evaluator_id DROP NOT NULL");
+        
+        // Create enum type for PostgreSQL
+        \Illuminate\Support\Facades\DB::statement("DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'appraisal_status') THEN
+                CREATE TYPE appraisal_status AS ENUM ('draft', 'self_assessment', 'manager_review', '1on1_scheduled', 'completed');
+            END IF;
+        END $$;");
+        
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE appraisals ADD COLUMN status appraisal_status DEFAULT 'draft'");
 
         // 3. Create Evaluation Mapping Table
         Schema::create('appraisal_evaluations', function (Blueprint $table) {
@@ -57,6 +65,12 @@ return new class extends Migration
         Schema::table('appraisals', function (Blueprint $table) {
             $table->dropColumn(['status', 'meeting_date', 'meeting_link', 'employee_acknowledgement']);
         });
+        
+        // Restore evaluator_id to NOT NULL
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE appraisals ALTER COLUMN evaluator_id SET NOT NULL");
+        
+        // Drop the enum type
+        \Illuminate\Support\Facades\DB::statement("DROP TYPE IF EXISTS appraisal_status");
         
         Schema::dropIfExists('kpi_templates');
     }

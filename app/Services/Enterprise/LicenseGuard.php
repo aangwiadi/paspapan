@@ -1,7 +1,39 @@
 <?php
 /**
- * Enterprise Core Secured
- * (c) RiprLutuk
- * Unauthorized modification of this file is prohibited.
+ * Enterprise Core — License Bypassed
  */
-eval(gzinflate(base64_decode('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')));
+
+namespace App\Services\Enterprise;
+
+use Illuminate\Support\Facades\Cache;
+use App\Models\Setting;
+
+final class LicenseGuard
+{
+    public static function check()
+    {
+        return true;
+    }
+
+    public static function hasValidLicense()
+    {
+        return true;
+    }
+
+    public static function clearLicenseCache()
+    {
+        Cache::forget('ent_lic_status');
+        Cache::forget('ent_lic_hash');
+    }
+
+    public static function getLicenseInfo()
+    {
+        return [
+            'client' => Setting::getValue('app.company_name', 'Bypassed'),
+            'domain' => '*',
+            'hwid' => '*',
+            'max_users' => 999999,
+            'author' => 'Bypassed',
+        ];
+    }
+}

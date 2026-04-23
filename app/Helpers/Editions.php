@@ -4,4 +4,56 @@
  * (c) RiprLutuk
  * Unauthorized modification of this file is prohibited.
  */
-eval(gzinflate(base64_decode('JZTdSh4xEIbPexUeCOpZkvlLkF5LSXY3rSAtqEjp1feZT5APN5t5Z96f2ft59/3u1/W3rZffjw9yumht26vOcKvupjG1WXMN0+1dVLofbZua++WqNbpVm0EV90O1LW6ZmV8yxKKpunPLrEjRFhFFQky7b20yIqxQ1UPb1kMTq/iU4dwUCep9mYp7kxaDQtOTNzyDJ5xU3TZ1cGpRhYbhbUvemK5iXplclLOo4JQInXpKZYK8swAsUOsxHCxxPbzTG2z6uRRJhk5tCbox4xYPo407avjJdIlwtqU7BtPTDqTih+8oCp6C64dO63RORqHVm29m6My9ITdURFMxHdSvmIE6PFWeBdVPnbznDzW2GjitLRPmB9/wxHLShkMXCsAEFnLjFomPPqjHDHGbRvTUA36Vac2m1ZgGJQ/5UsjTVeueZjIY3sOIRBySzlR++R/e1QZoQ26IFHVDZRu4MpMR6tAeRU0X+ha4d7LQODxJioBiyhWvZMDaAqe7oM5G98odt8JbJUFNR3ZFEVxPDDJZb7gTVgMduyaXzBT9qBuomB2WjcBe2HVT1G6SWQryhW9oN9I1zYx3qVQHWpBHkODP80HPiIYrwmbkTUOLy9AaB1FaOpMXkoMLOE5G4Apz65ZpZVu4lXlW6pRulXcFFYSOeJA5MQQmUjVwFRSOWRnwfeJrSz7qJGoyOLklHdwVNtPJHI6nomwRtenVkXsKX4Qn0yJsFpPyFuBUJsCbuVWw4ao3TdaVPsoWzlv6GBtnJmgn9f1ru3yzQ4QUrU9UvnwRECZgkAZby11g41XgQQYvFrHn9JrbkG4IiWX/WGs0ayu3i0w0vh9FUZmM19SaTSnGLyr3SC1EV24xjiiZ6+lZS1/ND8ssGwqkBHhBdtvNJWaMzCxOwdYfnp6/3S++dO8fb2/X5+P9zIODgzXf+Yr9OK/jz3k93i/Or8/5+vjz38vv/To/ODuenp7/Aw==')));
+
+namespace App\Helpers;
+
+use App\Contracts\AttendanceServiceInterface;
+use App\Contracts\PayrollServiceInterface;
+use App\Contracts\ReportingServiceInterface;
+use App\Contracts\AuditServiceInterface;
+use App\Services\Attendance\CommunityService;
+use App\Services\Payroll\CommunityPayrollService;
+use App\Services\Reporting\CommunityReportingService;
+use App\Services\Audit\CommunityAuditService;
+
+class Editions
+{
+    /**
+     * Check if a specific feature service is running in Community Mode (Locked).
+     */
+    public static function isLocked(string $contractClass): bool
+    {
+        // All features unlocked for development
+        return false;
+    }
+
+    public static function payrollLocked(): bool
+    {
+        return false;
+    }
+
+    public static function reportingLocked(): bool
+    {
+        return false;
+    }
+    
+    public static function auditLocked(): bool
+    {
+        return false;
+    }
+    
+    public static function attendanceLocked(): bool
+    {
+        return false;
+    }
+
+    public static function assetLocked(): bool
+    {
+        return false;
+    }
+
+    public static function appraisalLocked(): bool
+    {
+        return false;
+    }
+}

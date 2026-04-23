@@ -11,37 +11,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Open-Core Architecture:
-        // Bind to EnterpriseService if available AND LICENSED, otherwise fallback to CommunityService.
+        // Open-Core Architecture: Bypass — Always bind Enterprise services directly.
         $this->app->singleton(\App\Contracts\AttendanceServiceInterface::class, function ($app) {
-             if (class_exists(\App\Services\Attendance\EnterpriseService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
-                 return new \App\Services\Attendance\EnterpriseService();
-             }
-             return new \App\Services\Attendance\CommunityService();
+             return new \App\Services\Attendance\EnterpriseService();
         });
 
-        // Payroll Service Binding (Locked)
+        // Payroll Service Binding (Bypassed)
         $this->app->singleton(\App\Contracts\PayrollServiceInterface::class, function ($app) {
-             if (class_exists(\App\Services\Payroll\EnterprisePayrollService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
-                 return new \App\Services\Payroll\EnterprisePayrollService();
-             }
-             return new \App\Services\Payroll\CommunityPayrollService();
+             return new \App\Services\Payroll\EnterprisePayrollService();
         });
 
-        // Reporting Service Binding (Locked)
+        // Reporting Service Binding (Bypassed)
         $this->app->singleton(\App\Contracts\ReportingServiceInterface::class, function ($app) {
-             if (class_exists(\App\Services\Reporting\EnterpriseReportingService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
-                 return new \App\Services\Reporting\EnterpriseReportingService();
-             }
-             return new \App\Services\Reporting\CommunityReportingService();
+             return new \App\Services\Reporting\EnterpriseReportingService();
         });
 
-        // Audit Service Binding (Locked)
+        // Audit Service Binding (Bypassed)
         $this->app->singleton(\App\Contracts\AuditServiceInterface::class, function ($app) {
-             if (class_exists(\App\Services\Audit\EnterpriseAuditService::class) && \App\Services\Enterprise\LicenseGuard::hasValidLicense()) {
-                 return new \App\Services\Audit\EnterpriseAuditService();
-             }
-             return new \App\Services\Audit\CommunityAuditService();
+             return new \App\Services\Audit\EnterpriseAuditService();
         });
     }
 

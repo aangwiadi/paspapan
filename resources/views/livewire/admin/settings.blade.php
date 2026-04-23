@@ -115,9 +115,13 @@
                                     <div class="text-right">
                                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $licenseInfo['client'] ?? 'Unknown' }}</p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            @if(!empty($licenseInfo['expires_at']))
                                             Expires: <span class="{{ \Carbon\Carbon::parse($licenseInfo['expires_at'])->isPast() ? 'text-red-600' : 'text-green-600' }}">
                                                 {{ \Carbon\Carbon::parse($licenseInfo['expires_at'])->format('d M Y') }}
                                             </span>
+                                            @else
+                                            <span class="text-green-600">Lifetime</span>
+                                            @endif
                                         </p>
                                     </div>
                                     <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">

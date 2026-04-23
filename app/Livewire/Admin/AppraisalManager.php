@@ -1,7 +1,235 @@
 <?php
-/**
- * Enterprise Core Secured
- * (c) RiprLutuk
- * Unauthorized modification of this file is prohibited.
- */
-eval(gzinflate(base64_decode('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')));
+
+namespace App\Livewire\Admin;
+
+use App\Models\User;
+use App\Services\AppraisalService;
+use Carbon\Carbon;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+#[Layout('layouts.app')]
+class AppraisalManager extends Component
+{
+    use WithPagination;
+
+    public $month;
+    public $year;
+
+    public $search = '';
+
+    // Modal state
+    public $showModal = false;
+    public ?User $evaluatingUser = null;
+    public $activeAppraisalId = null;
+    public $attendanceScore = 0;
+
+    // Evaluation Mapping
+    public $evaluations = [];
+    public $managerScores = [];
+    public $evalComments = [];
+    public $evidenceDescriptions = [];
+
+    // System Fields
+    public $appraisalStatus = 'draft';
+    public $meetingDate = null;
+    public $meetingLink = null;
+    public $generalNotes = '';
+    public $employeeNotes = '';
+    public $developmentRecommendations = '';
+
+    /**
+     * Controller-style entry point used by Route::get('/appraisals', [AppraisalManager::class, 'index']).
+     * Returns the Livewire full-page component so Laravel can render it as a normal route.
+     */
+    public static function index()
+    {
+        return app('livewire')->new(static::class);
+    }
+
+    public function mount()
+    {
+        $this->month = Carbon::now()->month;
+        $this->year = Carbon::now()->year;
+    }
+
+    public function updating($property)
+    {
+        if (in_array($property, ['search', 'month', 'year'])) {
+            $this->resetPage();
+        }
+    }
+
+    public function initOrEvaluate($userId)
+    {
+        // Check Period Lock
+        $periodOpen = (bool) \App\Models\Setting::getValue('appraisal.period_open', false);
+        $deadline = \App\Models\Setting::getValue('appraisal.period_deadline', '');
+        if (!$periodOpen || ($deadline && now()->gt($deadline))) {
+            session()->flash('error', __('The appraisal window is currently closed. Please open it from KPI Settings.'));
+            return;
+        }
+
+        $this->evaluatingUser = User::findOrFail($userId);
+
+        $service = app(AppraisalService::class);
+        $appraisal = $service->initAppraisal($this->evaluatingUser, $this->month, $this->year);
+        $appraisal->load('evaluations.kpiTemplate.kpiGroup');
+
+        $this->activeAppraisalId = $appraisal->id;
+        $this->appraisalStatus = $appraisal->status;
+        $this->attendanceScore = $appraisal->attendance_score;
+        $this->meetingDate = $appraisal->meeting_date ? Carbon::parse($appraisal->meeting_date)->format('Y-m-d') : null;
+        $this->meetingLink = $appraisal->meeting_link;
+        $this->generalNotes = $appraisal->notes;
+
+        $this->evaluations = $appraisal->evaluations;
+
+        // Populate form bindings
+        foreach ($this->evaluations as $eval) {
+            $this->managerScores[$eval->id] = $eval->manager_score ?? '';
+            $this->evalComments[$eval->id] = $eval->comments ?? '';
+            $this->evidenceDescriptions[$eval->id] = $eval->evidence_description ?? '';
+        }
+
+        $this->employeeNotes = $appraisal->employee_notes;
+        $this->developmentRecommendations = $appraisal->development_recommendation;
+
+        $this->showModal = true;
+    }
+
+    public function save()
+    {
+        $this->validate([
+            'managerScores.*' => 'nullable|numeric|min:1|max:5',
+            'evalComments.*' => 'nullable|string',
+            'evidenceDescriptions.*' => 'nullable|string',
+            'generalNotes' => 'nullable|string',
+            'employeeNotes' => 'nullable|string',
+            'developmentRecommendations' => 'nullable|string',
+            'appraisalStatus' => 'required|in:self_assessment,manager_review,1on1_scheduled,completed',
+            'meetingDate' => 'nullable|date',
+            'meetingLink' => 'nullable|url',
+        ]);
+
+        $service = app(AppraisalService::class);
+        $appraisal = \App\Models\Appraisal::findOrFail($this->activeAppraisalId);
+
+        $oldStatus = $appraisal->status;
+
+        $service->finalizeAppraisal(
+            $appraisal,
+            $this->managerScores,
+            $this->evalComments,
+            $this->evidenceDescriptions,
+            $this->generalNotes,
+            $this->employeeNotes,
+            $this->developmentRecommendations,
+            $this->appraisalStatus,
+            $this->meetingDate,
+            $this->meetingLink
+        );
+
+        // If completing, set calibration to pending for HR Director review
+        if ($this->appraisalStatus === 'completed' && $oldStatus !== 'completed') {
+            $appraisal->update(['calibration_status' => 'pending']);
+        }
+
+        if ($oldStatus !== $this->appraisalStatus) {
+            $msg = '';
+            if ($this->appraisalStatus === 'self_assessment') {
+                $msg = 'Your manager has initialized an appraisal. Please login to submit your self-assessment score.';
+            } elseif ($this->appraisalStatus === '1on1_scheduled') {
+                $msg = 'Your manager has scheduled a 1-on-1 meeting to discuss your performance.';
+            } elseif ($this->appraisalStatus === 'completed') {
+                $msg = 'Your final performance score has been released. Please login to acknowledge the results.';
+            }
+
+            if ($msg) {
+                $this->evaluatingUser->notify(new \App\Notifications\AppraisalActionNotification(
+                    $appraisal,
+                    $msg,
+                    route('my-performance')
+                ));
+            }
+        }
+
+        $this->showModal = false;
+        $this->evaluatingUser = null;
+
+        session()->flash('success', __('Appraisal saved and status updated successfully.'));
+    }
+
+    /**
+     * Calibration: HR Director / Superadmin approves or rejects a completed appraisal.
+     */
+    public function calibrate($appraisalId, $decision)
+    {
+        if (!auth()->user()->isSuperadmin) {
+            session()->flash('error', __('Only Superadmin/HR Director can calibrate appraisals.'));
+            return;
+        }
+
+        $appraisal = \App\Models\Appraisal::findOrFail($appraisalId);
+        $appraisal->update([
+            'calibrator_id' => auth()->id(),
+            'calibration_status' => $decision,
+        ]);
+
+        // Notify the direct manager
+        if ($appraisal->evaluator) {
+            $statusText = $decision === 'approved' ? 'approved' : 'rejected and requires revision';
+            $appraisal->evaluator->notify(new \App\Notifications\AppraisalActionNotification(
+                $appraisal,
+                "The appraisal for {$appraisal->user->name} has been {$statusText} by HR.",
+                route('admin.appraisals')
+            ));
+        }
+
+        session()->flash('success', __('Calibration decision recorded: :status', ['status' => ucfirst($decision)]));
+    }
+
+    public function render()
+    {
+        $admin = auth()->user();
+        $query = User::where('group', 'user')->managedBy($admin);
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('nip', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        $users = $query->orderBy('name')->paginate(10);
+
+        $service = app(AppraisalService::class);
+        $appraisals = $service->getAppraisalsForUsers(
+            $users->pluck('id')->toArray(), $this->month, $this->year
+        );
+
+        $months = collect(range(1, 12))->map(fn ($i) => ['id' => (string) $i, 'name' => __(date('F', mktime(0, 0, 0, $i, 10)))])->values()->all();
+        $years = collect(range(date('Y') - 2, date('Y') + 1))->map(fn ($i) => ['id' => (string) $i, 'name' => (string) $i])->values()->all();
+
+        // Bell Curve Distribution Data
+        $allScores = \App\Models\Appraisal::where('period_month', $this->month)
+            ->where('period_year', $this->year)
+            ->whereNotNull('final_score')
+            ->pluck('final_score')
+            ->toArray();
+
+        $bellCurve = [
+            'A' => count(array_filter($allScores, fn ($s) => $s >= 90)),
+            'B' => count(array_filter($allScores, fn ($s) => $s >= 80 && $s < 90)),
+            'C' => count(array_filter($allScores, fn ($s) => $s >= 70 && $s < 80)),
+            'D' => count(array_filter($allScores, fn ($s) => $s >= 60 && $s < 70)),
+            'E' => count(array_filter($allScores, fn ($s) => $s < 60)),
+        ];
+
+        $periodOpen = (bool) \App\Models\Setting::getValue('appraisal.period_open', false);
+        $periodLabel = \App\Models\Setting::getValue('appraisal.period_label', '');
+
+        return view('livewire.admin.appraisal-manager', compact('users', 'appraisals', 'months', 'years', 'bellCurve', 'periodOpen', 'periodLabel'));
+    }
+}

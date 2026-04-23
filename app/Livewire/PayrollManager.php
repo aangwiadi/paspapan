@@ -121,16 +121,16 @@ class PayrollManager extends Component
             $count++;
         }
 
-        if ($locked) {
-            $this->dispatch('close-modal', 'generate-payroll-modal'); // Close modal
-            $this->showGenerateModal = false;
-            $this->isGenerating = false;
-            $this->selectedPayrolls = [];
-            $this->selectAll = false;
+        // if ($locked) {
+        //     $this->dispatch('close-modal', 'generate-payroll-modal'); // Close modal
+        //     $this->showGenerateModal = false;
+        //     $this->isGenerating = false;
+        //     $this->selectedPayrolls = [];
+        //     $this->selectAll = false;
 
-            $this->dispatch('feature-lock', title: 'Payroll Locked', message: 'Payroll Generation is an Enterprise Feature 🔒. Please Upgrade.');
-            return;
-        }
+        //     $this->dispatch('feature-lock', title: 'Payroll Locked', message: 'Payroll Generation is an Enterprise Feature 🔒. Please Upgrade.');
+        //     return;
+        // }
 
         $this->isGenerating = false;
         $this->showGenerateModal = false;

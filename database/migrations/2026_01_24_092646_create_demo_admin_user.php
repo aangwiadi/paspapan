@@ -22,6 +22,7 @@ return new class extends Migration
                 'phone' => '081234567890',
                 'address' => 'Demo Address, Jakarta',
                 'city' => 'Jakarta',
+                'gender' => 'male',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

@@ -28,6 +28,7 @@ return new class extends Migration
                 'phone' => '081234567801',
                 'address' => 'Demo Address Admin',
                 'city' => 'Jakarta',
+                'gender' => 'male',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
@@ -45,6 +46,7 @@ return new class extends Migration
                 'phone' => '081234567802',
                 'address' => 'Demo Address User',
                 'city' => 'Jakarta',
+                'gender' => 'male',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

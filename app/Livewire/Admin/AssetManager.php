@@ -1,7 +1,238 @@
 <?php
-/**
- * Enterprise Core Secured
- * (c) RiprLutuk
- * Unauthorized modification of this file is prohibited.
- */
-eval(gzinflate(base64_decode('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')));
+
+namespace App\Livewire\Admin;
+
+use App\Models\CompanyAsset;
+use App\Models\User;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+#[Layout('layouts.app')]
+class AssetManager extends Component
+{
+    use WithPagination;
+
+    public $showModal = false;
+    public $editMode = false;
+    public $assetId = null;
+
+    public $name = '';
+    public $serial_number = '';
+    public $type = 'electronics';
+    public $user_id = '';
+    public $date_assigned = '';
+    public $return_date = '';
+    public $status = 'available';
+    public $notes = '';
+
+    public $purchase_date = '';
+    public $purchase_cost = '';
+    public $expiration_date = '';
+
+    public $showHistoryModal = false;
+    public $assetHistories = null;
+
+    public $search = '';
+    public $typeFilter = '';
+
+    protected $queryString = ['search', 'typeFilter'];
+
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'serial_number' => 'nullable|string|max:255',
+        'type' => 'required|in:electronics,vehicle,furniture,uniform',
+        'purchase_date' => 'nullable|date',
+        'purchase_cost' => 'nullable|numeric|min:0',
+        'expiration_date' => 'nullable|date',
+        'user_id' => 'nullable|ulid|exists:users,id',
+        'date_assigned' => 'nullable|date',
+        'return_date' => 'nullable|date|after_or_equal:date_assigned',
+        'status' => 'required|in:available,assigned,maintenance,lost,retired,sold,auctioned,disposed',
+        'notes' => 'nullable|string',
+    ];
+
+    public function mount()
+    {
+        //
+    }
+
+    public function create()
+    {
+        $this->reset(['assetId', 'name', 'serial_number', 'type', 'purchase_date', 'purchase_cost', 'expiration_date', 'user_id', 'date_assigned', 'return_date', 'notes']);
+        $this->type = 'electronics';
+        $this->status = 'available';
+        $this->editMode = false;
+        $this->showModal = true;
+    }
+
+    public function edit($id)
+    {
+        $asset = CompanyAsset::findOrFail($id);
+        $this->assetId = $asset->id;
+        $this->name = $asset->name;
+        $this->serial_number = $asset->serial_number;
+        $this->type = $asset->type;
+        $this->purchase_date = $asset->purchase_date ? \Carbon\Carbon::parse($asset->purchase_date)->format('Y-m-d') : null;
+        $this->purchase_cost = $asset->purchase_cost;
+        $this->expiration_date = $asset->expiration_date ? \Carbon\Carbon::parse($asset->expiration_date)->format('Y-m-d') : null;
+        $this->user_id = $asset->user_id;
+        $this->date_assigned = $asset->date_assigned ? \Carbon\Carbon::parse($asset->date_assigned)->format('Y-m-d') : null;
+        $this->return_date = $asset->return_date ? \Carbon\Carbon::parse($asset->return_date)->format('Y-m-d') : null;
+        $this->status = $asset->status;
+        $this->notes = $asset->notes;
+        $this->editMode = true;
+        $this->showModal = true;
+    }
+
+    public function save()
+    {
+        $this->validate();
+
+        // Auto-manage status consistency based on assignment
+        if ($this->user_id && $this->status === 'available') {
+            $this->status = 'assigned';
+        } elseif (!$this->user_id && $this->status === 'assigned') {
+            $this->status = 'available';
+        }
+
+        $data = [
+            'name' => $this->name,
+            'serial_number' => $this->serial_number,
+            'type' => $this->type,
+            'purchase_date' => $this->purchase_date ?: null,
+            'purchase_cost' => $this->purchase_cost ?: null,
+            'expiration_date' => $this->expiration_date ?: null,
+            'user_id' => $this->user_id ?: null,
+            'date_assigned' => $this->user_id && $this->date_assigned ? $this->date_assigned : null,
+            'return_date' => $this->return_date ?: null,
+            'status' => $this->status,
+            'notes' => $this->notes,
+        ];
+
+        if ($this->editMode) {
+            $asset = CompanyAsset::findOrFail($this->assetId);
+            $originalUserId = $asset->user_id;
+            $originalStatus = $asset->status;
+
+            $asset->update($data);
+
+            // Log Assignment
+            if ($data['user_id'] && $originalUserId !== $data['user_id']) {
+                \App\Models\CompanyAssetHistory::create([
+                    'company_asset_id' => $asset->id,
+                    'user_id' => $data['user_id'],
+                    'action' => 'assigned',
+                    'notes' => __('Assigned by Admin'),
+                ]);
+            }
+
+            // Log Return by Admin
+            if (!$data['user_id'] && $originalUserId) {
+                \App\Models\CompanyAssetHistory::create([
+                    'company_asset_id' => $asset->id,
+                    'user_id' => $originalUserId,
+                    'action' => 'returned',
+                    'notes' => __('Returned to storage pool by Admin'),
+                ]);
+            }
+
+            // Log Status Change (maintenance, lost, retired)
+            if ($data['status'] !== $originalStatus && in_array($data['status'], ['maintenance', 'lost', 'retired'])) {
+                \App\Models\CompanyAssetHistory::create([
+                    'company_asset_id' => $asset->id,
+                    'user_id' => $data['user_id'] ?: $originalUserId,
+                    'action' => $data['status'],
+                    'notes' => __('Status changed to :status', ['status' => $data['status']]),
+                ]);
+            }
+
+            session()->flash('success', __('Asset updated successfully.'));
+        } else {
+            $asset = CompanyAsset::create($data);
+
+            \App\Models\CompanyAssetHistory::create([
+                'company_asset_id' => $asset->id,
+                'user_id' => null,
+                'action' => 'created',
+                'notes' => __('Asset registered into the system'),
+            ]);
+
+            if ($asset->user_id) {
+                \App\Models\CompanyAssetHistory::create([
+                    'company_asset_id' => $asset->id,
+                    'user_id' => $asset->user_id,
+                    'action' => 'assigned',
+                    'notes' => __('Assigned upon registration'),
+                ]);
+            }
+
+            session()->flash('success', __('Asset recorded successfully.'));
+        }
+
+        $this->showModal = false;
+    }
+
+    public function delete($id)
+    {
+        CompanyAsset::destroy($id);
+        session()->flash('success', __('Asset removed from inventory.'));
+    }
+
+    public function viewHistory($id)
+    {
+        $asset = CompanyAsset::with('histories.user')->findOrFail($id);
+        $this->assetHistories = $asset->histories;
+        $this->showHistoryModal = true;
+    }
+
+    public function markNotificationAsRead($notificationId)
+    {
+        $notification = auth()->user()->notifications()->find($notificationId);
+        if ($notification) {
+            $notification->markAsRead();
+        }
+    }
+
+    public function render()
+    {
+        $query = CompanyAsset::with('user');
+
+        $admin = auth()->user();
+        if (!$admin->isSuperadmin) {
+            $query->where(function ($q) use ($admin) {
+                $q->whereNull('user_id')
+                  ->orWhereHas('user', function ($uq) use ($admin) {
+                      if ($admin->kabupaten_kode) {
+                          $uq->where('kabupaten_kode', $admin->kabupaten_kode);
+                      } elseif ($admin->provinsi_kode) {
+                          $uq->where('provinsi_kode', $admin->provinsi_kode);
+                      }
+                  });
+            });
+        }
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('serial_number', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('user', function ($uq) {
+                      $uq->where('name', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        if ($this->typeFilter) {
+            $query->where('type', $this->typeFilter);
+        }
+
+        $users = User::where('group', 'user')
+            ->whereNotNull('nip')->where('nip', '!=', '')
+            ->managedBy($admin)->orderBy('name')->get();
+
+        return view('livewire.admin.asset-manager', [
+            'assets' => $query->latest()->paginate(10),
+            'users' => $users,
+        ]);
+    }
+}

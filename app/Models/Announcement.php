@@ -44,7 +44,7 @@ class Announcement extends Model
                 $q->whereNull('expire_date')
                   ->orWhere('expire_date', '>=', $today);
             })
-            ->orderByRaw("FIELD(priority, 'high', 'normal', 'low')")
+            ->orderByRaw("CASE WHEN priority = 'high' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('publish_date', 'desc');
     }
 
@@ -73,7 +73,7 @@ class Announcement extends Model
             ->whereDoesntHave('dismissedByUsers', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })
-            ->orderByRaw("FIELD(priority, 'high', 'normal', 'low')")
+            ->orderByRaw("CASE WHEN priority = 'high' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('publish_date', 'desc');
     }
 
