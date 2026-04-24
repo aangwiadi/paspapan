@@ -13,18 +13,19 @@ services:
       - localNetwork
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  postgres:
-    container_name: hris_postgres
-    image: postgres:15-alpine
+  mysql:
+    container_name: hris_mysql
+    image: mysql:8.0
     restart: unless-stopped
     environment:
-      POSTGRES_DB: hris_db
-      POSTGRES_USER: hris_user
-      POSTGRES_PASSWORD: "Ambonpati71!#"
+      MYSQL_DATABASE: hris_db
+      MYSQL_USER: hris_user
+      MYSQL_PASSWORD: "Ambonpati71!#"
+      MYSQL_ROOT_PASSWORD: "Ambonpati71!#"
     ports:
-      - "5454:5432"
+      - "5454:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     networks:
       - localNetwork
 
@@ -48,4 +49,4 @@ networks:
 
 volumes:
   vendor_volume:
-  postgres_data:
+  mysql_data:
