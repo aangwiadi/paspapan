@@ -51,7 +51,7 @@
 
     <x-banner />
 
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900 pt-[calc(4rem+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
+    <div class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 pt-[calc(4rem+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
         @livewire('navigation-menu')
 
         <!-- @if (isset($header))
@@ -78,9 +78,11 @@
             </div>
         </div>
 
-        <main id="main-content">
+        <main id="main-content" class="flex-1">
             {{ $slot }}
         </main>
+
+        <x-footer />
     </div>
 
     @stack('modals')

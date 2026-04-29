@@ -47,7 +47,7 @@
 <body class="font-sans antialiased">
 
 
-    <div class="font-sans text-gray-900 antialiased dark:text-gray-100 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+    <div class="min-h-screen flex flex-col font-sans text-gray-900 antialiased dark:text-gray-100 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
 
         <div class="absolute right-4 top-4 flex gap-2">
             <!-- Language Switcher -->
@@ -79,8 +79,11 @@
             <x-theme-toggle x-data />
         </div>
 
-        {{ $slot }}
+        <div class="flex-1">
+            {{ $slot }}
+        </div>
 
+        <x-footer />
     </div>
 
     @livewireScripts
