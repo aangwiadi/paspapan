@@ -63,5 +63,21 @@ COPY --from=frontend /var/www/app/public/build /var/www/app/public/build
 # Install PHP deps (recommended)
 RUN composer install --no-dev --optimize-autoloader
 
+# Copy vendor to a backup location so it survives volume mounts
+RUN cp -a /var/www/app/vendor /var/www/app/vendor-backup
+
+# Entrypoint script to restore vendor if empty (due to volume mount)
+RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/www/app/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '  echo "Restoring vendor directory from backup..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '  cp -a /var/www/app/vendor-backup/* /var/www/app/vendor/' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '  cp -a /var/www/app/vendor-backup/.* /var/www/app/vendor/ 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'exec "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
+
 RUN chown -R www-data:www-data \
     public/ storage/ bootstrap/ vendor/
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php-fpm"]

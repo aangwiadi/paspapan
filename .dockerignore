@@ -1,0 +1,43 @@
+# Dependencies (will be installed fresh in Docker)
+vendor/
+node_modules/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Storage (runtime data)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Tests
+tests/
+
+# Screenshots / docs
+screenshots/
+*.md
+
+# Android / Capacitor
+android/
+
+# Database backup
+database_backup.sql

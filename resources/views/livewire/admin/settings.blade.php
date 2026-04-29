@@ -6,7 +6,7 @@
         { id: 'security', label: '{{ __('Security') }}', icon: 'shield-check' },
         { id: 'leave', label: '{{ __('Leave & Time Off') }}', icon: 'calendar' },
         { id: 'notif', label: '{{ __('Notifications') }}', icon: 'bell' },
-        { id: 'enterprise', label: '{{ __('Enterprise') }}', icon: 'briefcase' }
+       // { id: 'enterprise', label: '{{ __('Enterprise') }}', icon: 'briefcase' }
     ],
     init() {
         // Initialize from URL hash
@@ -89,7 +89,7 @@
                             'leave'        => 'leave',
                             'notification' => 'notif',
                             'payroll'      => null, // Exclude Payroll/Finance from this view
-                            'enterprise'   => 'enterprise',
+                            'enterprise'   => '', //enterprise
                         ];
                         $targetTab = $tabMap[$group] ?? null; 
                     @endphp

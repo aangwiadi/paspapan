@@ -23,7 +23,7 @@ document.addEventListener("livewire:navigated", () => {
 let map;
 
 window.initializeMap = ({ onUpdate, location }) => {
-    let defaultLocation = location ?? [-6.8905504, 109.3808162];
+    let defaultLocation = location ?? [-6.2088, 106.8456];
     map = L.map("map").setView(defaultLocation, 13);
 
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
