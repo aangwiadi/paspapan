@@ -140,12 +140,16 @@ class AnalyticsDashboard extends Component
     public function getTopDiligentEmployeesProperty()
     {
         // Logic: Lowest average check-in time (for 'present' status only)
+        $avgSeconds = DB::getDriverName() === 'pgsql'
+            ? 'CAST(AVG(EXTRACT(EPOCH FROM CAST(attendances.time_in AS time))) AS INTEGER)'
+            : 'AVG(TIME_TO_SEC(attendances.time_in))';
+
         return User::join('attendances', 'users.id', '=', 'attendances.user_id')
             ->whereMonth('attendances.date', $this->month)
             ->whereYear('attendances.date', $this->year)
             ->where('attendances.status', 'present')
             ->whereNotNull('attendances.time_in')
-            ->select('users.id', 'users.name', 'users.profile_photo_path', DB::raw('AVG(TIME_TO_SEC(attendances.time_in)) as avg_check_in'))
+            ->select('users.id', 'users.name', 'users.profile_photo_path', DB::raw("{$avgSeconds} as avg_check_in"))
             ->groupBy('users.id', 'users.name', 'users.profile_photo_path')
             ->orderBy('avg_check_in', 'asc')
             ->limit(5)

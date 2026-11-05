@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Holiday extends Model
 {
@@ -64,11 +65,14 @@ class Holiday extends Model
     {
         $today = Carbon::today();
         $endDate = $today->copy()->addDays($days);
+        $pgsql = DB::getDriverName() === 'pgsql';
+        $doyColumn = $pgsql ? 'EXTRACT(DOY FROM date)' : 'DAYOFYEAR(date)';
+        $doyParam = $pgsql ? 'EXTRACT(DOY FROM CAST(? AS date))' : 'DAYOFYEAR(?)';
         
         return self::whereBetween('date', [$today, $endDate])
-            ->orWhere(function ($query) use ($today, $endDate) {
+            ->orWhere(function ($query) use ($today, $endDate, $doyColumn, $doyParam) {
                 $query->where('is_recurring', true)
-                    ->whereRaw('DAYOFYEAR(date) BETWEEN DAYOFYEAR(?) AND DAYOFYEAR(?)', [
+                    ->whereRaw("{$doyColumn} BETWEEN {$doyParam} AND {$doyParam}", [
                         $today->format('Y-m-d'),
                         $endDate->format('Y-m-d')
                     ]);

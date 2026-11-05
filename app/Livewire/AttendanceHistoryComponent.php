@@ -100,7 +100,7 @@ class AttendanceHistoryComponent extends Component
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
                     $q->where('is_recurring', true)
-                        ->whereRaw('MONTH(date) = ?', [$startOfMonth->month]);
+                        ->whereMonth('date', $startOfMonth->month);
                 });
         })->get()->keyBy(function ($holiday) use ($startOfMonth) {
             // For recurring holidays, use current year's date as key

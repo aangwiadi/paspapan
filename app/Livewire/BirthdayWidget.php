@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class BirthdayWidget extends Component
@@ -12,18 +13,21 @@ class BirthdayWidget extends Component
     {
         $today = Carbon::today();
         $endDate = $today->copy()->addDays(7);
+        $pgsql = DB::getDriverName() === 'pgsql';
+        $doyColumn = $pgsql ? 'EXTRACT(DOY FROM birth_date)' : 'DAYOFYEAR(birth_date)';
+        $doyParam = $pgsql ? 'EXTRACT(DOY FROM CAST(? AS date))' : 'DAYOFYEAR(?)';
         
         // Get users with birthdays in the next 7 days
         $upcomingBirthdays = User::whereNotNull('birth_date')
-            ->whereRaw('DAYOFYEAR(birth_date) BETWEEN DAYOFYEAR(?) AND DAYOFYEAR(?)', [
+            ->whereRaw("{$doyColumn} BETWEEN {$doyParam} AND {$doyParam}", [
                 $today->format('Y-m-d'),
                 $endDate->format('Y-m-d')
             ])
-            ->orWhereRaw('DAYOFYEAR(birth_date) BETWEEN 1 AND DAYOFYEAR(?) AND DAYOFYEAR(?) > 358', [
+            ->orWhereRaw("{$doyColumn} BETWEEN 1 AND {$doyParam} AND {$doyParam} > 358", [
                 $endDate->format('Y-m-d'),
                 $today->format('Y-m-d')
             ]) // Handle year wrap-around (late December)
-            ->orderByRaw('DAYOFYEAR(birth_date)')
+            ->orderByRaw($doyColumn)
             ->limit(5)
             ->get()
             ->map(function ($user) use ($today) {
