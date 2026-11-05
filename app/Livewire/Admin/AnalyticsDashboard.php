@@ -273,7 +273,7 @@ class AnalyticsDashboard extends Component
     {
         return Attendance::whereMonth('date', $this->month)
             ->whereYear('date', $this->year)
-            ->whereIn('status', ['sick', 'excused', 'alpha'])
+            ->whereIn('status', ['sick', 'excused', 'absent'])
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')

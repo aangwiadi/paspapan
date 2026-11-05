@@ -24,7 +24,7 @@ class AppraisalService
         $absents = Attendance::where('user_id', $user->id)
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
-            ->whereIn('status', ['absent', 'alpha'])
+            ->whereIn('status', ['absent'])
             ->count();
 
         $excused = Attendance::where('user_id', $user->id)
