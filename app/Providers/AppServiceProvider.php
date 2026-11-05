@@ -37,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Behind a TLS-terminating proxy the request may look like plain HTTP, which makes
+        // generated asset URLs (e.g. livewire.min.js) http:// and blocked by CSP / mixed content.
+        if (app()->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Share App Settings with all views
         try {
             // Wrap in try-catch to avoid issues during migration/seeding if table doesn't exist
