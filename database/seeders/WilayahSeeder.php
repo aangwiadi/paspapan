@@ -17,17 +17,43 @@ class WilayahSeeder extends Seeder
             return;
         }
 
-        $this->command->info("Extracting and executing wilayah.sql...");
+        $handle = gzopen($path, 'rb');
 
-        $sql = gzdecode(File::get($path));
-
-        if ($sql === false) {
-            $this->command->error("Failed to extract gzip file.");
+        if ($handle === false) {
+            $this->command->error("Failed to open gzip file.");
             return;
         }
 
-        DB::unprepared($sql);
+        $this->command->info("Importing wilayah data...");
 
-        $this->command->info("Wilayah table seeded successfully!");
+        // The dump is MySQL-flavoured, so instead of executing it as raw SQL we stream it
+        // and insert the ('kode','nama') rows in batches. Works on MySQL and Postgres alike.
+        DB::table('wilayah')->truncate();
+
+        $batch = [];
+        $total = 0;
+
+        while (($line = gzgets($handle)) !== false) {
+            if (!preg_match("/^\('([^']+)','((?:[^']|'')*)'\)[,;]?\s*$/", $line, $m)) {
+                continue;
+            }
+
+            $batch[] = ['kode' => $m[1], 'nama' => str_replace("''", "'", $m[2])];
+
+            if (count($batch) === 500) {
+                DB::table('wilayah')->insert($batch);
+                $total += count($batch);
+                $batch = [];
+            }
+        }
+
+        gzclose($handle);
+
+        if ($batch) {
+            DB::table('wilayah')->insert($batch);
+            $total += count($batch);
+        }
+
+        $this->command->info("Wilayah table seeded successfully! ({$total} rows)");
     }
 }
