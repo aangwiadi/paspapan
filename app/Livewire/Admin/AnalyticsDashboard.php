@@ -173,13 +173,16 @@ class AnalyticsDashboard extends Component
     public function getTopEarlyLeaversProperty()
     {
         // Logic: Count of check-outs before shift end time
+        // time_out is a datetime; Postgres can't compare it to the time-only shifts.end_time without a cast
+        $timeOut = DB::getDriverName() === 'pgsql' ? 'CAST(attendances.time_out AS time)' : 'attendances.time_out';
+
         return User::join('attendances', 'users.id', '=', 'attendances.user_id')
             ->join('shifts', 'attendances.shift_id', '=', 'shifts.id')
             ->whereMonth('attendances.date', $this->month)
             ->whereYear('attendances.date', $this->year)
             ->whereIn('attendances.status', ['present', 'late'])
             ->whereNotNull('attendances.time_out')
-            ->whereRaw('attendances.time_out < shifts.end_time')
+            ->whereRaw("{$timeOut} < shifts.end_time")
             ->select('users.id', 'users.name', 'users.profile_photo_path', DB::raw('count(*) as early_leave_count'))
             ->groupBy('users.id', 'users.name', 'users.profile_photo_path')
             ->orderByDesc('early_leave_count')
