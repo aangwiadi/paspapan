@@ -20,6 +20,9 @@ RUN apk add --no-cache bash && \
 RUN set -ex \
     && apk add --no-cache \
         postgresql-dev \
+        nodejs \
+        npm \
+        git \
         git \
         curl \
         zlib-dev \
