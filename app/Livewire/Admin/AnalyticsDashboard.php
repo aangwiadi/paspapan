@@ -285,15 +285,12 @@ class AnalyticsDashboard extends Component
         // Join users with wilayah to get the province name. 
         // We use leftJoin in case some users don't have a province set.
         $regions = User::where('group', 'user') // Count only regular users/employees
-            ->leftJoin('wilayah', function ($join) {
-                // adding COLLATE utf8mb4_unicode_ci to resolve Illegal mix of collations error
-                $join->on('users.provinsi_kode', '=', DB::raw('wilayah.kode COLLATE utf8mb4_unicode_ci'));
-            })
+            ->leftJoin('wilayah', 'users.provinsi_kode', '=', 'wilayah.kode')
             ->select(
                 'users.id',
                 'users.name',
                 'users.provinsi_kode',
-                DB::raw('COALESCE(wilayah.nama, "Unknown") as region_name')
+                DB::raw("COALESCE(wilayah.nama, 'Unknown') as region_name")
             )
             ->get();
 
