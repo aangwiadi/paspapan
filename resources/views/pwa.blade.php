@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>PasPapan</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="{{ \App\Models\Setting::logoUrl() }}">
-    <meta name="theme-color" content="#4CAF50" />
+    <title>{{ config('app.name') }}</title>
+    @include('layouts.partials.pwa-head')
     <!-- Capacitor JS - Required for native plugin access -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@6.0.0/dist/capacitor.js"></script>
     <style>

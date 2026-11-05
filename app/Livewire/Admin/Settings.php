@@ -95,7 +95,8 @@ class Settings extends Component
 
     public function render()
     {
-        $groups = Setting::all()->groupBy('group');
+        // The app name comes from APP_NAME in .env, so it isn't editable here
+        $groups = Setting::where('key', '!=', 'app.name')->get()->groupBy('group');
         $licenseInfo = \App\Services\Enterprise\LicenseGuard::getLicenseInfo();
         $hwid = \App\Console\Commands\EnterpriseHwId::generate();
         return view('livewire.admin.settings', ['groups' => $groups, 'licenseInfo' => $licenseInfo, 'hwid' => $hwid]);

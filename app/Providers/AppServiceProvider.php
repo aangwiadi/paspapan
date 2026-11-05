@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         try {
             // Wrap in try-catch to avoid issues during migration/seeding if table doesn't exist
             if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-                \Illuminate\Support\Facades\View::share('appName', \App\Models\Setting::getValue('app.name', config('app.name')));
+                \Illuminate\Support\Facades\View::share('appName', config('app.name'));
                 \Illuminate\Support\Facades\View::share('companyName', \App\Models\Setting::getValue('app.company_name', 'My Company'));
                 \Illuminate\Support\Facades\View::share('companyAddress', \App\Models\Setting::getValue('app.company_address', ''));
                 \Illuminate\Support\Facades\View::share('supportContact', \App\Models\Setting::getValue('app.support_contact', ''));

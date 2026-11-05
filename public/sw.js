@@ -1,11 +1,10 @@
-const CACHE_NAME = 'paspapan-v2.5';
+const CACHE_NAME = 'app-shell-v3';
 const OFFLINE_URL = '/offline';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
     '/offline',
-    '/images/icons/icon-192x192.png',
-    '/images/icons/icon-512x512.png',
+    '/pwa/icon/any-192.png',
 ];
 
 // Install event - precache assets

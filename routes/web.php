@@ -19,6 +19,12 @@ Route::get('/', function () {
 
 Route::view('/offline', 'offline')->name('offline');
 
+// PWA: manifest and icons are generated from the app name and the uploaded system logo
+Route::get('/manifest.json', [\App\Http\Controllers\PwaController::class, 'manifest'])->name('pwa.manifest');
+Route::get('/pwa/icon/{mode}-{size}.png', [\App\Http\Controllers\PwaController::class, 'icon'])
+    ->where(['mode' => 'any|maskable|apple', 'size' => '[0-9]+'])
+    ->name('pwa.icon');
+
 // Test Error Views
 Route::get('/test-error/{code}', function ($code) {
     abort($code);

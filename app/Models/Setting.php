@@ -45,6 +45,16 @@ class Setting extends Model
     }
 
     /**
+     * Short hash that changes whenever the logo changes, for cache busting.
+     */
+    public static function logoVersion(): string
+    {
+        $path = self::logoPath();
+
+        return substr(md5($path . (is_file($path) ? filemtime($path) : '')), 0, 10);
+    }
+
+    /**
      * Absolute filesystem path of the system logo, for PDFs.
      */
     public static function logoPath(): string
