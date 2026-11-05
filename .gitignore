@@ -27,3 +27,5 @@ yarn-error.log
 *.zip
 server.php
 *.Source.php
+.DS_Store
+**/.DS_Store
