@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PasPapan</title>
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/images/icons/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" href="{{ \App\Models\Setting::logoUrl() }}">
     <meta name="theme-color" content="#4CAF50" />
     <!-- Capacitor JS - Required for native plugin access -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@6.0.0/dist/capacitor.js"></script>

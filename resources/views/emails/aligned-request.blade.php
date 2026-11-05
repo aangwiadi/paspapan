@@ -2,7 +2,7 @@
     $companyName = \App\Models\Setting::getValue('app.company_name', config('app.name', 'PasPapan'));
     $appUrl = config('app.url');
     // Pastikan path logo benar.
-    $logoUrl = url('images/icons/favicon-circle.png'); 
+    $logoUrl = \App\Models\Setting::logoUrl(); 
     
     // Warna tema (Bisa diubah di sini)
     $colorBg = '#f3f4f6';      // Abu-abu terang modern

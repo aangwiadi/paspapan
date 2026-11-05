@@ -42,6 +42,13 @@ class SettingSeeder extends Seeder
                 'description' => 'Application Name',
             ],
             [
+                'key' => 'app.logo',
+                'value' => null,
+                'group' => 'identity',
+                'type' => 'image',
+                'description' => 'System Logo (also used as favicon)',
+            ],
+            [
                 'key' => 'app.company_name',
                 'value' => 'PT. PasPapan Indonesia',
                 'group' => 'identity',
@@ -149,6 +156,12 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
+            // Don't wipe an already uploaded logo when re-seeding
+            if ($setting['key'] === 'app.logo') {
+                Setting::firstOrCreate(['key' => $setting['key']], $setting);
+                continue;
+            }
+
             Setting::updateOrCreate(
                 ['key' => $setting['key']],
                 $setting

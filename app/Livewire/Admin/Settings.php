@@ -6,10 +6,16 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 #[Layout('layouts.app')]
 class Settings extends Component
 {
+    use WithFileUploads;
+
+    public $logoUpload;
+
     public function mount()
     {
         if (!auth()->check() || !auth()->user()->isAdmin) {
@@ -40,6 +46,50 @@ class Settings extends Component
             }
 
             $this->dispatch('saved'); // For sweetalert or notification
+        }
+    }
+
+    public function updatedLogoUpload()
+    {
+        if (!auth()->user()->isSuperadmin) {
+            $this->reset('logoUpload');
+            return;
+        }
+
+        $this->validate([
+            'logoUpload' => 'image|mimes:png,jpg,jpeg,webp|max:2048',
+        ]);
+
+        $setting = Setting::where('key', Setting::LOGO_KEY)->firstOrFail();
+        $old = $setting->value;
+
+        $path = $this->logoUpload->store('logos', 'public');
+        $setting->update(['value' => $path]);
+        Cache::forget("setting.{$setting->key}");
+
+        if ($old && $old !== $path) {
+            Storage::disk('public')->delete($old);
+        }
+
+        $this->reset('logoUpload');
+        $this->dispatch('saved');
+    }
+
+    public function removeLogo()
+    {
+        if (!auth()->user()->isSuperadmin) {
+            return;
+        }
+
+        $setting = Setting::where('key', Setting::LOGO_KEY)->first();
+
+        if ($setting) {
+            if ($setting->value) {
+                Storage::disk('public')->delete($setting->value);
+            }
+            $setting->update(['value' => null]);
+            Cache::forget("setting.{$setting->key}");
+            $this->dispatch('saved');
         }
     }
 

@@ -83,8 +83,8 @@
             <table class="company-info-table">
                 <tr>
                     <td class="logo-cell">
-                        @if(file_exists(public_path('images/icons/logo.png')))
-                            <img src="{{ public_path('images/icons/logo.png') }}" style="height: 45px; width: auto;">
+                        @if(file_exists(\App\Models\Setting::logoPath()))
+                            <img src="{{ \App\Models\Setting::logoPath() }}" style="height: 45px; width: auto;">
                         @endif
                     </td>
                     <td class="text-cell">

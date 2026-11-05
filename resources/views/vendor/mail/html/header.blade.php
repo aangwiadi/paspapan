@@ -15,7 +15,7 @@
                                 {{-- Logo: Revert to URL for Stability --}}
                                 @php
                                     // Fallback to standard URL to ensure delivery
-                                    $logoSrc = url('images/icons/favicon-circle.png'); 
+                                    $logoSrc = \App\Models\Setting::logoUrl(); 
                                 @endphp
                                 <td style="vertical-align: middle; padding-right: 14px;">
                                     <img src="{{ $logoSrc }}" class="logo" alt="PasPapan" style="height: 32px; width: 32px; border-radius: 50%; vertical-align: middle; display: block;">

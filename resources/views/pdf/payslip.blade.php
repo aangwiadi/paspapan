@@ -131,7 +131,7 @@
                 <table class="company-info-table">
                     <tr>
                         <td class="logo-cell">
-                            <img src="{{ public_path('images/icons/logo.png') }}" style="height: 50px; width: auto;">
+                            <img src="{{ \App\Models\Setting::logoPath() }}" style="height: 50px; width: auto;">
                         </td>
                         <td class="text-cell">
                             <h1 class="company-name">{{ \App\Models\Setting::getValue('app.company_name', config('app.name')) }}</h1>

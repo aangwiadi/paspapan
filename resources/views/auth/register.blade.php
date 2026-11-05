@@ -6,7 +6,7 @@
                 {{-- Logo and Title --}}
                 {{-- Logo and Title --}}
                 <div class="mx-auto flex justify-center">
-                    <img src="{{ asset('images/icons/logo.png') }}"
+                    <img src="{{ \App\Models\Setting::logoUrl() }}"
                         class="h-16 w-20 rounded-full object-cover shadow-lg" alt="{{ config('app.name') }}">
                 </div>
                 <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">

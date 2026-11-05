@@ -20,4 +20,39 @@ class Setting extends Model
             return self::where('key', $key)->value('value') ?? $default;
         });
     }
+
+    public const LOGO_KEY = 'app.logo';
+    public const DEFAULT_LOGO = 'images/icons/logo.png';
+
+    /**
+     * Uploaded logo path on the public disk, or null when none was uploaded (or the file is gone).
+     */
+    protected static function uploadedLogo(): ?string
+    {
+        $path = self::getValue(self::LOGO_KEY);
+
+        return $path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path) ? $path : null;
+    }
+
+    /**
+     * Public URL of the system logo (also used for favicon and app icons).
+     */
+    public static function logoUrl(): string
+    {
+        $path = self::uploadedLogo();
+
+        return $path ? asset('storage/' . $path) : asset(self::DEFAULT_LOGO);
+    }
+
+    /**
+     * Absolute filesystem path of the system logo, for PDFs.
+     */
+    public static function logoPath(): string
+    {
+        $path = self::uploadedLogo();
+
+        return $path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->path($path)
+            : public_path(self::DEFAULT_LOGO);
+    }
 }

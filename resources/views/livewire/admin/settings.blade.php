@@ -184,6 +184,27 @@
                                                     <option value="12" @selected($setting->value == '12')>12 Hour (05:00 PM)</option>
                                                 </x-select>
 
+                                            @elseif($setting->type === 'image')
+                                                <div class="flex items-center gap-4">
+                                                    <img src="{{ $logoUpload ? $logoUpload->temporaryUrl() : \App\Models\Setting::logoUrl() }}"
+                                                        class="h-16 w-16 rounded-full border border-gray-200 object-cover dark:border-gray-600" alt="Logo">
+                                                    @if(auth()->user()->isSuperadmin)
+                                                        <div class="space-y-2">
+                                                            <input type="file" id="setting_{{ $setting->id }}" wire:model="logoUpload"
+                                                                accept="image/png,image/jpeg,image/webp"
+                                                                class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100 dark:text-gray-300">
+                                                            <p class="text-xs text-gray-500">{{ __('PNG, JPG or WEBP, max 2 MB. Square image recommended.') }}</p>
+                                                            <div wire:loading wire:target="logoUpload" class="text-xs text-primary-600">{{ __('Uploading...') }}</div>
+                                                            @error('logoUpload') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                                                            @if($setting->value)
+                                                                <button type="button" wire:click="removeLogo" class="text-xs font-medium text-red-600 hover:underline">
+                                                                    {{ __('Reset to default logo') }}
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+
                                             @elseif($setting->type === 'textarea')
                                                  <x-textarea
                                                     wire:change.debounce.500ms="updateValue({{ $setting->id }}, $event.target.value)"

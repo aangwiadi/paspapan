@@ -7,14 +7,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $appName ?? config('app.name', 'Laravel') }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/icons/favicon-circle.png') }}">
+    <link rel="icon" type="image/png" href="{{ \App\Models\Setting::logoUrl() }}">
 
     <!-- PWA iOS & Splash -->
     <meta name="theme-color" content="#ffffff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PasPapan">
-    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+    <link rel="apple-touch-icon" href="{{ \App\Models\Setting::logoUrl() }}">
 
 
     <!-- Fonts -->
