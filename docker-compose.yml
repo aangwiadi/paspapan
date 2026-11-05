@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   app:
-    container_name: hris_container
+    container_name: hris_mwt_container
     restart: unless-stopped
     build:
       context: ./
@@ -13,7 +13,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
   mysql:
-    container_name: hris_mysql
+    container_name: hris_mwt_mysql
     image: mysql:8.0
     restart: unless-stopped
     environment:
@@ -29,7 +29,7 @@ services:
       - localNetwork
 
   nginx:
-    container_name: hris_nginx
+    container_name: hris_mwt_nginx
     image: nginx:1.19-alpine
     restart: unless-stopped
     ports:
