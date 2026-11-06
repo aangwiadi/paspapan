@@ -509,12 +509,16 @@
             @endif
           </div>
           <div class="mt-4">
-            <span class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('City') }}</span>
-            @if (empty($form->user->city))
-              <p>-</p>
-            @else
-              <p>{{ $form->user->city }}</p>
-            @endif
+            <span class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('Wilayah') }}</span>
+            @php
+              $wilayah = collect([
+                  $form->user->kelurahan?->nama,
+                  $form->user->kecamatan?->nama,
+                  $form->user->kabupaten?->nama,
+                  $form->user->provinsi?->nama,
+              ])->filter()->implode(', ');
+            @endphp
+            <p>{{ $wilayah ?: '-' }}</p>
           </div>
           <div class="mt-4">
             <span class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('Job Title') }}</span>

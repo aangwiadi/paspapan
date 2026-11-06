@@ -18,7 +18,7 @@ class UsersExport implements FromView
     public function view(): View
     {
         return view('admin.import-export.export-users', [
-            'users' => User::whereIn('group', $this->groups)->get(),
+            'users' => User::with(['provinsi', 'kabupaten', 'kecamatan', 'kelurahan'])->whereIn('group', $this->groups)->get(),
         ]);
     }
 }
