@@ -131,11 +131,33 @@
       <x-input-error for="address" class="mt-2" />
     </div>
 
-    <!-- City -->
-    <div class="col-span-6">
-      <x-label for="city" value="{{ __('City') }}" />
-      <x-input id="city" type="text" class="mt-1 block w-full" wire:model="state.city" required />
-      <x-input-error for="city" class="mt-2" />
+    <!-- Wilayah -->
+    <div class="col-span-6 sm:col-span-3">
+      <x-label for="provinsi" value="{{ __('Provinsi') }}" />
+      <x-tom-select id="provinsi" class="mt-1 block w-full" wire:model.live="state.provinsi_kode" placeholder="{{ __('Pilih Provinsi') }}"
+        :options="$provinces->map(fn($p) => ['id' => $p->kode, 'name' => $p->nama])" />
+      <x-input-error for="provinsi_kode" class="mt-2" />
+    </div>
+
+    <div class="col-span-6 sm:col-span-3" wire:key="profile-kab-{{ $state['provinsi_kode'] ?? 'empty' }}">
+      <x-label for="kabupaten" value="{{ __('Kabupaten/Kota') }}" />
+      <x-tom-select id="kabupaten" class="mt-1 block w-full" wire:model.live="state.kabupaten_kode" placeholder="{{ __('Pilih Kabupaten/Kota') }}"
+        :options="$regencies->map(fn($r) => ['id' => $r->kode, 'name' => $r->nama])" />
+      <x-input-error for="kabupaten_kode" class="mt-2" />
+    </div>
+
+    <div class="col-span-6 sm:col-span-3" wire:key="profile-kec-{{ $state['kabupaten_kode'] ?? 'empty' }}">
+      <x-label for="kecamatan" value="{{ __('Kecamatan') }}" />
+      <x-tom-select id="kecamatan" class="mt-1 block w-full" wire:model.live="state.kecamatan_kode" placeholder="{{ __('Pilih Kecamatan') }}"
+        :options="$districts->map(fn($d) => ['id' => $d->kode, 'name' => $d->nama])" />
+      <x-input-error for="kecamatan_kode" class="mt-2" />
+    </div>
+
+    <div class="col-span-6 sm:col-span-3" wire:key="profile-kel-{{ $state['kecamatan_kode'] ?? 'empty' }}">
+      <x-label for="kelurahan" value="{{ __('Kelurahan/Desa') }}" />
+      <x-tom-select id="kelurahan" class="mt-1 block w-full" wire:model.live="state.kelurahan_kode" placeholder="{{ __('Pilih Kelurahan/Desa') }}"
+        :options="$villages->map(fn($v) => ['id' => $v->kode, 'name' => $v->nama])" />
+      <x-input-error for="kelurahan_kode" class="mt-2" />
     </div>
 
     <div class="col-span-6 flex flex-row gap-3">

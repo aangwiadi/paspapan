@@ -48,6 +48,9 @@ RUN set -ex \
         zip \
         bcmath
 
+# Allow profile photo / attachment uploads larger than PHP's 2 MB default
+RUN { echo 'upload_max_filesize=10M'; echo 'post_max_size=12M'; echo 'memory_limit=512M'; } > /usr/local/etc/php/conf.d/uploads.ini
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer \
     | php -- --install-dir=/usr/local/bin --filename=composer

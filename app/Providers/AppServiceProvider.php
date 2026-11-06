@@ -37,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Profile form with wilayah (province → village) selects instead of the dropped users.city column
+        \Livewire\Livewire::component('profile.update-profile-information-form', \App\Livewire\Profile\UpdateProfileInformationForm::class);
+
         // Behind a TLS-terminating proxy the request may look like plain HTTP, which makes
         // generated asset URLs (e.g. livewire.min.js) http:// and blocked by CSP / mixed content.
         if (app()->environment('production')) {
