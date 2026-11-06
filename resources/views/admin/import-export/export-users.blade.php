@@ -16,7 +16,10 @@
       <th>Birth Date</th>
       <th>Birth Place</th>
       <th>Address</th>
-      <th>City</th>
+      <th>Provinsi</th>
+      <th>Kabupaten</th>
+      <th>Kecamatan</th>
+      <th>Kelurahan</th>
       <th>Created At</th>
     </tr>
   </thead>
@@ -38,7 +41,10 @@
         <td>{{ $user->birth_date?->format('Y-m-d') }}</td>
         <td>{{ $user->birth_place }}</td>
         <td>{{ $user->address }}</td>
-        <td>{{ $user->city }}</td>
+        <td>{{ $user->provinsi?->nama }}</td>
+        <td>{{ $user->kabupaten?->nama }}</td>
+        <td>{{ $user->kecamatan?->nama }}</td>
+        <td>{{ $user->kelurahan?->nama }}</td>
         <td>{{ $user->created_at->format('Y-m-d H:i') }}</td>
       </tr>
     @endforeach
