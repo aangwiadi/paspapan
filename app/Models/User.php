@@ -14,6 +14,42 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    /** Tables whose rows belong to a user and must go away with them. */
+    public const OWNED_TABLES = [
+        'attendances', 'activity_logs', 'payrolls', 'reimbursements', 'cash_advances',
+        'schedules', 'face_descriptors', 'geolocation_logs', 'overtimes', 'appraisals',
+        'company_asset_histories', 'announcement_user_dismissals',
+    ];
+
+    /**
+     * Remove a set of users (by id) together with their dependent rows and photos.
+     * Photos are removed first, since deleting a photo saves the (then deleted) model.
+     */
+    public static function purgeByIds(array $ids): void
+    {
+        if (empty($ids)) {
+            return;
+        }
+
+        foreach (static::whereIn('id', $ids)->whereNotNull('profile_photo_path')->get() as $user) {
+            $user->deleteProfilePhoto();
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($ids) {
+            foreach (self::OWNED_TABLES as $table) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'user_id')) {
+                    \Illuminate\Support\Facades\DB::table($table)->whereIn('user_id', $ids)->delete();
+                }
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('company_assets', 'user_id')) {
+                \Illuminate\Support\Facades\DB::table('company_assets')->whereIn('user_id', $ids)->update(['user_id' => null]);
+            }
+            \Illuminate\Support\Facades\DB::table('personal_access_tokens')
+                ->where('tokenable_type', static::class)->whereIn('tokenable_id', $ids)->delete();
+            static::whereIn('id', $ids)->delete();
+        });
+    }
+
     use HasUlids;
     use HasApiTokens;
     use HasFactory;

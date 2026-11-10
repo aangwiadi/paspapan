@@ -101,11 +101,8 @@ class SystemMaintenance extends Component
 
             if ($this->cleanNonAdminUsers) {
                 // Delete users who are NOT admin or superadmin
-                User::where('group', 'user')->delete();
+                User::purgeByIds(User::where('group', 'user')->pluck('id')->all());
             }
-
-            // Re-enable Foreign Key Checks
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             if ($this->cleanStorage) {
                 // Delete physical files
@@ -114,6 +111,8 @@ class SystemMaintenance extends Component
                 // Recreate empty directories to prevent listing errors if any
                 Storage::disk('public')->makeDirectory('attendance-photos');
                 Storage::disk('public')->makeDirectory('attachments');
+                Storage::disk('public')->deleteDirectory('profile-photos');
+                Storage::disk('public')->makeDirectory('profile-photos');
             }
 
             $this->dispatch('success', message: __('Selected data and files cleaned successfully.'));
@@ -127,6 +126,8 @@ class SystemMaintenance extends Component
 
         } catch (\Exception $e) {
             $this->dispatch('error', message: __('Failed to clean database: ') . $e->getMessage());
+        } finally {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         }
     }
 

@@ -163,8 +163,7 @@ class UserForm extends Form
         if (!$this->isAllowed()) {
             return abort(403);
         }
-        $this->user->delete();
-        $this->deleteProfilePhoto();
+        \App\Models\User::purgeByIds([$this->user->id]);
         $this->reset();
     }
 
