@@ -17,7 +17,7 @@ class User extends Authenticatable
     /** Tables whose rows belong to a user and must go away with them. */
     public const OWNED_TABLES = [
         'attendances', 'activity_logs', 'payrolls', 'reimbursements', 'cash_advances',
-        'schedules', 'face_descriptors', 'geolocation_logs', 'overtimes', 'appraisals',
+        'schedules', 'face_descriptors', 'overtimes', 'appraisals',
         'company_asset_histories', 'announcement_user_dismissals',
     ];
 

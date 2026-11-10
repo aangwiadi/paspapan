@@ -33,6 +33,11 @@ class SystemMaintenance extends Component
             return;
         }
 
+        if (!in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            $this->dispatch('error', message: __('This feature only supports MySQL/MariaDB.'));
+            return;
+        }
+
         $this->validate([
             'backupFile' => 'required|file|max:51200', // 50MB Max
         ]);
@@ -85,18 +90,25 @@ class SystemMaintenance extends Component
 
         try {
             // Disable Foreign Key Checks to allow truncation
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');   
+            $isMysql = in_array(DB::getDriverName(), ['mysql', 'mariadb']);
+            if ($isMysql) {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            }
+            // PostgreSQL has no FOREIGN_KEY_CHECKS; TRUNCATE ... CASCADE instead.
+            $truncate = fn (string $table) => $isMysql
+                ? DB::table($table)->truncate()
+                : DB::statement('TRUNCATE TABLE "' . $table . '" RESTART IDENTITY CASCADE');
             
             if ($this->cleanAttendances) {
-                Attendance::truncate();
+                $truncate('attendances');
             }
 
             if ($this->cleanActivityLogs) {
-                DB::table('activity_logs')->truncate();
+                $truncate('activity_logs');
             }
 
             if ($this->cleanNotifications) {
-                DB::table('notifications')->truncate();
+                $truncate('notifications');
             }
 
             if ($this->cleanNonAdminUsers) {
@@ -127,7 +139,9 @@ class SystemMaintenance extends Component
         } catch (\Exception $e) {
             $this->dispatch('error', message: __('Failed to clean database: ') . $e->getMessage());
         } finally {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
         }
     }
 
@@ -182,6 +196,11 @@ class SystemMaintenance extends Component
     {
         if (!Auth::user()->isSuperadmin || Auth::user()->is_demo) {
             $this->dispatch('error', message: __('Unauthorized action.'));
+            return;
+        }
+
+        if (!in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            $this->dispatch('error', message: __('This feature only supports MySQL/MariaDB.'));
             return;
         }
 
