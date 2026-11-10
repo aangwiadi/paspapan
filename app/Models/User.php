@@ -45,7 +45,9 @@ class User extends Authenticatable
                 \Illuminate\Support\Facades\DB::table('company_assets')->whereIn('user_id', $ids)->update(['user_id' => null]);
             }
             \Illuminate\Support\Facades\DB::table('personal_access_tokens')
-                ->where('tokenable_type', static::class)->whereIn('tokenable_id', $ids)->delete();
+                ->where('tokenable_type', static::class)
+                // tokenable_id may be uuid/bigint depending on migration; compare as text
+                ->whereIn(\Illuminate\Support\Facades\DB::raw('CAST(tokenable_id AS VARCHAR(64))'), $ids)->delete();
             static::whereIn('id', $ids)->delete();
         });
     }
